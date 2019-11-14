@@ -13,7 +13,7 @@ import static com.codeborne.selenide.Selectors.byClassName;
 import static com.codeborne.selenide.Selenide.element;
 import static org.junit.Assert.*;
 
-public class AsmrzaUsageTest extends BaseTest {
+public class AsmrzaLoginTests extends BaseTest {
 
 
     @Test
@@ -45,9 +45,7 @@ public class AsmrzaUsageTest extends BaseTest {
         SelenideElement selenideElement = element("[class^=styles__container__error").shouldBe(visible).shouldBe(text("Невозможно войти с предоставленными учетными данными."));
         assertEquals(loginPage.colorToHex(selenideElement), "#ff3434");
 
-
-
-
+// дописать остальные тесты после решения по 93
     }
 
 

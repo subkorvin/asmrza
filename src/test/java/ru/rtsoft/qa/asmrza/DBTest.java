@@ -3,6 +3,7 @@ package ru.rtsoft.qa.asmrza;
 import org.junit.Test;
 
 import java.sql.*;
+import java.util.ArrayList;
 
 public class DBTest {
 
@@ -41,25 +42,29 @@ public class DBTest {
             System.out.println("Failed to make connection to database");
         }
 
-        Statement st =connection.createStatement();
-        ResultSet rs = st.executeQuery("select * from asm_substation");
+        Statement st = connection.createStatement();
+        ResultSet rs = st.executeQuery("select name from asm_substation");
 
-        ResultSetMetaData rsmd = rs.getMetaData();
-        int row = 0;
-        int columnsNumber = rsmd.getColumnCount();
+//        ResultSetMetaData rsmd = rs.getMetaData();
+//        int row = 0;
+//        int columnsNumber = rsmd.getColumnCount();
+        ArrayList<String> items = new ArrayList<String>();
         while (rs.next()) {
-            for (int i = 1; i <= columnsNumber; i++) {
-                if (i > 1) System.out.print(",  ");
-                String columnValue = rs.getString(i);
-                System.out.print(columnValue + " " + rsmd.getColumnName(i));
-            }
-            row = row + 1;
-            System.out.println("");
+            int i = 1;
+            //            for (int i = 1; i <= columnsNumber; i++) {
+//            if (i > 1) System.out.print(",  ");
+            String columnValue = rs.getString(i);
+//            System.out.print(columnValue);  // + " " + rsmd.getColumnName(i));
+            items.add(columnValue);
         }
-        System.out.println(row);
+//        row = row + 1;
+        System.out.println("");
+//    }
+//        System.out.println(row);
+        System.out.println(items);
         rs.close();
         st.close();
         connection.close();
-
+//}
     }
 }

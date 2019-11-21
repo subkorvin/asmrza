@@ -92,6 +92,7 @@ public class AsmrzaMainPageTests extends BaseTest {
         mainPage.checkJournalLink();
         mainPage.checkUserLink();
         mainPage.exitLink();
+        loginAsAdmin();
     }
 
     @Test

@@ -111,8 +111,9 @@ public class Page {
         }
         for (String name: names) {
             element(byCssSelector("li.styles__substation___1JooU")).shouldBe(visible);
-            ElementsCollection coll = elements(byCssSelector("span.styles__substation__name___1qVW9")).filterBy(text(name));
-            SelenideElement s = coll.get(0).parent().parent().parent();
+            SelenideElement s = elements(byCssSelector("span.styles__substation__name___1qVW9")).findBy(text(name)).parent().parent().parent();
+//            ElementsCollection coll = elements(byCssSelector("span.styles__substation__name___1qVW9")).filterBy(text(name));
+//            SelenideElement s = coll.get(0).parent().parent().parent();
             SelenideElement button = s.find(withText("Перейти к объекту"));
             button.click();
             String objName = element(byClassName("styles__header__name-content___3qA1W")).text();
@@ -150,6 +151,20 @@ public class Page {
 
     public void panelPresenceCheck() {
         element(byClassName("styles__main__right___CTlka")).shouldBe(visible);
-        elements(byCssSelector("button")).findBy(value("faults")).shouldBe(visible);
+        elements(byCssSelector("button"))
+                .findBy(value("faults"))
+                .shouldBe(visible)
+                .find(byCssSelector("span.styles__fault-label___atLWx"))
+                .shouldHave(text("Аварии"));
+        elements(byCssSelector("button"))
+                .findBy(value("malfunctions"))
+                .shouldBe(visible)
+                .find(byCssSelector("span.styles__malfunction-label___1u7uw"))
+                .shouldHave(text("Неисправности"));
+        elements(byCssSelector("button"))
+                .findBy(value("system"))
+                .shouldBe(visible)
+                .find(byCssSelector("span.styles__system-label___3zPio"))
+                .shouldHave(text("Оперативные"));
     }
 }

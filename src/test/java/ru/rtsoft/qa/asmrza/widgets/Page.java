@@ -1,15 +1,12 @@
 package ru.rtsoft.qa.asmrza.widgets;
 
-import com.codeborne.selenide.Condition;
 import com.codeborne.selenide.ElementsCollection;
 import com.codeborne.selenide.Selenide;
 import com.codeborne.selenide.SelenideElement;
-import org.junit.Assert;
-import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.Color;
 
-import java.util.ArrayList;
-import java.util.Comparator;
+import java.sql.SQLException;
+import java.util.*;
 
 import static com.codeborne.selenide.Condition.*;
 import static com.codeborne.selenide.Selectors.*;
@@ -112,8 +109,6 @@ public class Page {
         for (String name: names) {
             element(byCssSelector("li.styles__substation___1JooU")).shouldBe(visible);
             SelenideElement s = elements(byCssSelector("span.styles__substation__name___1qVW9")).findBy(text(name)).parent().parent().parent();
-//            ElementsCollection coll = elements(byCssSelector("span.styles__substation__name___1qVW9")).filterBy(text(name));
-//            SelenideElement s = coll.get(0).parent().parent().parent();
             SelenideElement button = s.find(withText("Перейти к объекту"));
             button.click();
             String objName = element(byClassName("styles__header__name-content___3qA1W")).text();
@@ -167,4 +162,82 @@ public class Page {
                 .find(byCssSelector("span.styles__system-label___3zPio"))
                 .shouldHave(text("Оперативные"));
     }
+
+    public void filterControlsPresenceCheck() {
+        SelenideElement container = element(byCssSelector("[class^=styles__filter-list]")).shouldBe(visible);
+        List<String> filtersExpected = Arrays.asList(new String[] {"Энергосистема", "Диспетчер", "Собственник", "Класс напряжения", "Смежные объекты"});
+        ArrayList<String> filtersActual = new ArrayList<>();
+        ElementsCollection elements = container.findAll(byClassName("styles__text___1Qlyb"));
+        for (SelenideElement element:elements) {
+            filtersActual.add(element.text());
+        }
+        assertThat(filtersActual, equalTo(filtersExpected));
+        ElementsCollection filtersCheckbox = container.findAll(byCssSelector("div.styles__checkbox-list__title___gtUmD"));
+        for (SelenideElement checkbox:filtersCheckbox) {
+            checkbox.click();
+            SelenideElement s  = checkbox.parent().parent();
+            s.find(byCssSelector("div[class^=styles__dropdown___2G4eg]")).shouldBe(visible);
+            checkbox.click();
+        }
+    }
+
+    public void filterControlsContentCheck() throws SQLException {
+        Database database = new Database();
+        database.connect();
+        SelenideElement container = element(byCssSelector("[class^=styles__filter-list]")).shouldBe(visible);
+        ElementsCollection containerElements = container.findAll(byClassName("styles__text___1Qlyb"));
+        String sqlQuery;
+        for (SelenideElement containerElement:containerElements) {
+            switch (containerElement.text()){
+                case "Энергосистема":
+                    sqlQuery = "select distinct name from asm_geographical_region";
+                    findingAndAssert(database, containerElement, sqlQuery);
+                    break;
+                case "Диспетчер":
+                    sqlQuery = "SELECT distinct asm_company.name FROM asm_company JOIN asm_substation ON asm_company.id = asm_substation.operator_id";
+                    findingAndAssert(database, containerElement, sqlQuery);
+                    break;
+                case "Собственник":
+                    sqlQuery = "SELECT distinct asm_company.name FROM asm_company JOIN asm_substation ON asm_company.id = asm_substation.owner_id";
+                    findingAndAssert(database, containerElement, sqlQuery);
+                    break;
+                case "Класс напряжения":
+                    sqlQuery = "select max (asm_base_voltage.nominal) from asm_substation left join asm_switchgear on asm_substation.id = asm_switchgear.substation_id\n" +
+                            "left join asm_base_voltage on asm_switchgear.base_voltage_id = asm_base_voltage.id\n" +
+                            "group by asm_substation.name";
+                    findingUniqueAndAssert(database, containerElement, sqlQuery);
+            }
+        }
+    }
+
+    private void findingAndAssert(Database database, SelenideElement containerElement, String sqlQuery) throws SQLException {
+        ArrayList<String> nameOfElementsFromDb = database.getNameOfObjects(sqlQuery);
+        nameOfElementsFromDb.sort(Comparator.naturalOrder());
+        ArrayList<String> nameOfElementsFromWeb = new ArrayList<>();
+        SelenideElement parentElement = containerElement.parent().parent().parent().parent();
+        parentElement.click();
+        ElementsCollection contents = parentElement.findAll(byCssSelector("label[class=styles__checkbox__content___3_xkR]"));
+        for (SelenideElement content:contents) {
+            nameOfElementsFromWeb.add(content.text());
+        }
+        nameOfElementsFromWeb.sort(Comparator.naturalOrder());
+        assertThat(nameOfElementsFromDb, equalTo(nameOfElementsFromWeb));
+        parentElement.click();
+    }
+
+    private void findingUniqueAndAssert(Database database, SelenideElement containerElement, String sqlQuery) throws SQLException {
+        ArrayList<String> s = database.getNameOfObjects(sqlQuery);
+        HashSet<String> ss = new HashSet<>(s);
+        ArrayList<String> nameOfElementsFromDb = new ArrayList<>(ss);
+        ArrayList<String> nameOfElementsFromWeb = new ArrayList<>();
+        SelenideElement parentElement = containerElement.parent().parent().parent().parent();
+        parentElement.click();
+        ElementsCollection contents = parentElement.findAll(byCssSelector("label[class=styles__checkbox__content___3_xkR]"));
+        for (SelenideElement content:contents) {
+            nameOfElementsFromWeb.add(String.valueOf(Integer.valueOf((int) Double.parseDouble(content.text().substring(0, 3)) * 1000)));
+        }
+        assertThat(nameOfElementsFromDb, equalTo(nameOfElementsFromWeb));
+        parentElement.click();
+    }
+
 }

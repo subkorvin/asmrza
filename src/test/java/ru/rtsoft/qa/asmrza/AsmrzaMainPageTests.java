@@ -100,4 +100,11 @@ public class AsmrzaMainPageTests extends BaseTest {
         Page mainPage = new Page();
         mainPage.panelPresenceCheck();
     }
+
+    @Test
+    public void filterControlsCheck() throws SQLException {
+        Page mainPage = new Page();
+        mainPage.filterControlsPresenceCheck();
+        mainPage.filterControlsContentCheck();
+    }
 }

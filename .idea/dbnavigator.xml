@@ -25,18 +25,48 @@
     <show-object-properties value="true" />
     <loaded-nodes>
       <connection connection-id="98d23dc6-9321-4c01-9a08-bb68dd226f3b">
-        <schema name="pg_catalog" object-types="view, table, function" />
-        <schema name="public" object-types="view, sequence, index, column, constraint, table, dataset trigger, function" />
+        <schema name="information_schema" object-types="table, view, sequence, function" />
+        <schema name="pg_catalog" object-types="table, view, sequence, column, function" />
+        <schema name="pg_toast" object-types="table, view, sequence, function" />
+        <schema name="public" object-types="table, constraint, view, index, dataset trigger, sequence, column, function" />
       </connection>
     </loaded-nodes>
   </component>
   <component name="DBNavigator.Project.DatabaseConsoleManager">
     <connection id="98d23dc6-9321-4c01-9a08-bb68dd226f3b">
-      <console name="Connection" type="STANDARD" schema="public" session="Main"><![CDATA[select * from asm_power_equipment
+      <console name="Connection" type="STANDARD" schema="public" session="Main"><![CDATA[select * from asm_substation
 
-select * from asm_line_segment
+select * from asm_company
 
-select * from asm_fault]]></console>
+select * from asm_geographical_region
+
+SELECT        asm_company.name AS Operator, asm_substation.name AS Subst
+FROM            asm_company JOIN
+                         asm_substation ON asm_company.id = asm_substation.operator_id-- AND company.id = substation.owner_id
+WHERE        (asm_company.name = 'Кубанское РДУ')
+
+
+SELECT        distinct asm_company.name
+FROM            asm_company JOIN
+                         asm_substation ON 
+                         --asm_company.id = asm_substation.operator_id
+                          --AND 
+                         asm_company.id = asm_substation.owner_id
+--WHERE        (asm_company.name = 'Кубанское РДУ')
+
+select * from asm_base_voltage
+select * from asm_switchgear
+
+SELECT distinct asm_company.name FROM asm_company JOIN asm_substation ON asm_company.id = asm_substation.owner_id
+
+SELECT distinct asm_company.name FROM asm_company JOIN asm_substation ON asm_company.id = asm_substation.operator_id
+
+
+
+
+select distinct asm_substation.name, max (asm_base_voltage.nominal) from asm_substation left join asm_switchgear on asm_substation.id = asm_switchgear.substation_id
+left join asm_base_voltage on asm_switchgear.base_voltage_id = asm_base_voltage.id
+group by asm_substation.name]]></console>
     </connection>
   </component>
   <component name="DBNavigator.Project.DatabaseFileManager">

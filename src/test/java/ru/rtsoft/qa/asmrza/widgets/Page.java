@@ -240,4 +240,35 @@ public class Page {
         parentElement.click();
     }
 
+    public void filteringByEnergoSystem(String energoSystemName) throws SQLException {
+        Database database = new Database();
+        database.connect();
+        element(byCssSelector("li.styles__substation___1JooU")).shouldBe(visible);
+        int initialNumberStationOfSystemFromDb = database.getNumberOfItems("select asm_substation.name from asm_substation left join asm_geographical_region on " +
+                "asm_substation.geographical_region_id = asm_geographical_region.\"id\" where asm_geographical_region.\"name\" = 'ЭС Юга'");
+        int initialNumberStationOfSystemFromWeb = 0;
+        ElementsCollection initialContainers = elements(byCssSelector("li.styles__substation___1JooU"));
+        for (SelenideElement container:initialContainers) {
+            String stationInfo = container.find(byClassName("styles__substation__info___31rGu")).text();
+            String energoSystem = stationInfo.substring(0, stationInfo.indexOf('|') - 1);
+            if (energoSystem.equals(energoSystemName)){
+                initialNumberStationOfSystemFromWeb++;
+            }
+        }
+        assertThat(initialNumberStationOfSystemFromDb, equalTo(initialNumberStationOfSystemFromWeb));
+        int finalNumberStationOfSystemFromDb = database.getNumberOfItems("select asm_substation.name from asm_substation left join asm_geographical_region on" +
+                " asm_substation.geographical_region_id = asm_geographical_region.\"id\" where asm_geographical_region.\"name\" != 'ЭС Юга'");
+        int finalNumberStationOfSystemFromWeb = 0;
+        elements(byCssSelector("div.styles__text___1Qlyb")).findBy(text(energoSystemName)).click();
+        element(byCssSelector("label.styles__checkbox__icon___2jsv2")).click();
+        ElementsCollection finalContainers = elements(byCssSelector("li.styles__substation___1JooU"));
+        for (SelenideElement container:finalContainers){
+            String stationInfo = container.find(byClassName("styles__substation__info___31rGu")).text();
+            String energoSystem = stationInfo.substring(0, stationInfo.indexOf('|') - 1);
+            if (energoSystem.equals(energoSystemName)){
+                finalNumberStationOfSystemFromWeb++;
+            }
+        }
+        assertThat(finalNumberStationOfSystemFromDb, equalTo(finalNumberStationOfSystemFromWeb));
+    }
 }

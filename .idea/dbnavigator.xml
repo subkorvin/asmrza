@@ -23,14 +23,7 @@
     <autoscroll-to-editor value="false" />
     <autoscroll-from-editor value="true" />
     <show-object-properties value="true" />
-    <loaded-nodes>
-      <connection connection-id="98d23dc6-9321-4c01-9a08-bb68dd226f3b">
-        <schema name="information_schema" object-types="table, view, sequence, function" />
-        <schema name="pg_catalog" object-types="table, view, sequence, column, function" />
-        <schema name="pg_toast" object-types="table, view, sequence, function" />
-        <schema name="public" object-types="table, constraint, view, index, dataset trigger, sequence, column, function" />
-      </connection>
-    </loaded-nodes>
+    <loaded-nodes />
   </component>
   <component name="DBNavigator.Project.DatabaseConsoleManager">
     <connection id="98d23dc6-9321-4c01-9a08-bb68dd226f3b">
@@ -61,7 +54,7 @@ SELECT distinct asm_company.name FROM asm_company JOIN asm_substation ON asm_com
 
 SELECT distinct asm_company.name FROM asm_company JOIN asm_substation ON asm_company.id = asm_substation.operator_id
 
-
+select asm_substation.name from asm_substation left join asm_geographical_region on asm_substation.geographical_region_id = asm_geographical_region."id" where asm_geographical_region."name" != 'ЭС Юга'
 
 
 select distinct asm_substation.name, max (asm_base_voltage.nominal) from asm_substation left join asm_switchgear on asm_substation.id = asm_switchgear.substation_id

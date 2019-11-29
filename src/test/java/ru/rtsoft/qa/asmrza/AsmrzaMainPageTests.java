@@ -5,6 +5,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import ru.rtsoft.qa.asmrza.testconfigs.BaseTest;
 import ru.rtsoft.qa.asmrza.widgets.Database;
+import ru.rtsoft.qa.asmrza.widgets.Filter;
 import ru.rtsoft.qa.asmrza.widgets.Page;
 import java.sql.SQLException;
 import java.util.List;
@@ -106,5 +107,11 @@ public class AsmrzaMainPageTests extends BaseTest {
         Page mainPage = new Page();
         mainPage.filterControlsPresenceCheck();
         mainPage.filterControlsContentCheck();
+    }
+
+    @Test
+    public void filteringCheck() throws SQLException {
+        Filter filter = new Filter();
+        filter.openDropDownMenuFor("Энергосистема");
     }
 }

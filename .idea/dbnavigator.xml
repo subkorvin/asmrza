@@ -23,13 +23,18 @@
     <autoscroll-to-editor value="false" />
     <autoscroll-from-editor value="true" />
     <show-object-properties value="true" />
-    <loaded-nodes />
+    <loaded-nodes>
+      <connection connection-id="98d23dc6-9321-4c01-9a08-bb68dd226f3b">
+        <schema name="pg_catalog" object-types="table, view, function" />
+        <schema name="public" object-types="column, table, view, function" />
+      </connection>
+    </loaded-nodes>
   </component>
   <component name="DBNavigator.Project.DatabaseConsoleManager">
     <connection id="98d23dc6-9321-4c01-9a08-bb68dd226f3b">
       <console name="Connection" type="STANDARD" schema="public" session="Main"><![CDATA[select * from asm_substation
 
-select * from asm_company
+select * from asm_company where "id" = 'ff7febe5-e676-4f08-a802-c9e4476abf5f'
 
 select * from asm_geographical_region
 
@@ -56,10 +61,17 @@ SELECT distinct asm_company.name FROM asm_company JOIN asm_substation ON asm_com
 
 select asm_substation.name from asm_substation left join asm_geographical_region on asm_substation.geographical_region_id = asm_geographical_region."id" where asm_geographical_region."name" != 'ЭС Юга'
 
+select asm_substation.name from asm_substation left join asm_company on asm_substation.operator_id = asm_company.id where asm_company.name = 'Кубанское РДУ'
 
-select distinct asm_substation.name, max (asm_base_voltage.nominal) from asm_substation left join asm_switchgear on asm_substation.id = asm_switchgear.substation_id
+select asm_substation.name from asm_substation left join asm_company on asm_substation.owner_id = asm_company.id where asm_company.name = 'Кубанское РДУ'
+
+
+select distinct max (asm_base_voltage.nominal) from asm_substation left join asm_switchgear on asm_substation.id = asm_switchgear.substation_id
 left join asm_base_voltage on asm_switchgear.base_voltage_id = asm_base_voltage.id
-group by asm_substation.name]]></console>
+group by asm_substation.name
+
+select distinct asm_substation.name from asm_substation left join asm_switchgear on asm_substation.id = asm_switchgear.substation_id
+ left join asm_base_voltage on asm_switchgear.base_voltage_id = asm_base_voltage.id where asm_base_voltage.nominal = 220000 group by asm_substation.name]]></console>
     </connection>
   </component>
   <component name="DBNavigator.Project.DatabaseFileManager">

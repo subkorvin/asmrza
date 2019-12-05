@@ -64,7 +64,7 @@ public class Page {
         element(byCssSelector("li.styles__substation___1JooU")).shouldBe(visible);
         ArrayList<String> name = new ArrayList<String>();
         ElementsCollection items = elements(byCssSelector("li[class^=styles__navigation__item___2PZLM]"));
-        for (SelenideElement item: items) {
+        for (SelenideElement item : items) {
             name.add(item.text());
         }
         name.sort(Comparator.naturalOrder());
@@ -85,7 +85,7 @@ public class Page {
     public void checkTracingObjectsAttributes() {
         element(byCssSelector("li.styles__substation___1JooU")).shouldBe(visible);
         ElementsCollection containers = elements(byCssSelector("li.styles__substation___1JooU"));
-        for (SelenideElement container: containers) {
+        for (SelenideElement container : containers) {
             if (container.find(byCssSelector(".styles__substation___1JooU span.styles__substation__adjacent-icon___2U8jP")).exists()) {
                 continue;
             } else {
@@ -102,11 +102,11 @@ public class Page {
         element(byCssSelector("li.styles__substation___1JooU")).shouldBe(visible);
         ElementsCollection containers = elements(byCssSelector("li.styles__substation___1JooU"));
         ArrayList<String> names = new ArrayList<>();
-        for (SelenideElement container: containers) {
+        for (SelenideElement container : containers) {
             String objNameMain = container.find(byClassName("styles__substation__name___1qVW9")).text();
             names.add(objNameMain);
         }
-        for (String name: names) {
+        for (String name : names) {
             element(byCssSelector("li.styles__substation___1JooU")).shouldBe(visible);
             SelenideElement s = elements(byCssSelector("span.styles__substation__name___1qVW9")).findBy(text(name)).parent().parent().parent();
             SelenideElement button = s.find(withText("Перейти к объекту"));
@@ -165,17 +165,17 @@ public class Page {
 
     public void filterControlsPresenceCheck() {
         SelenideElement container = element(byCssSelector("[class^=styles__filter-list]")).shouldBe(visible);
-        List<String> filtersExpected = Arrays.asList(new String[] {"Энергосистема", "Диспетчер", "Собственник", "Класс напряжения", "Смежные объекты"});
+        List<String> filtersExpected = Arrays.asList(new String[]{"Энергосистема", "Диспетчер", "Собственник", "Класс напряжения", "Смежные объекты"});
         ArrayList<String> filtersActual = new ArrayList<>();
         ElementsCollection elements = container.findAll(byClassName("styles__text___1Qlyb"));
-        for (SelenideElement element:elements) {
+        for (SelenideElement element : elements) {
             filtersActual.add(element.text());
         }
         assertThat(filtersActual, equalTo(filtersExpected));
         ElementsCollection filtersCheckbox = container.findAll(byCssSelector("div.styles__checkbox-list__title___gtUmD"));
-        for (SelenideElement checkbox:filtersCheckbox) {
+        for (SelenideElement checkbox : filtersCheckbox) {
             checkbox.click();
-            SelenideElement s  = checkbox.parent().parent();
+            SelenideElement s = checkbox.parent().parent();
             s.find(byCssSelector("div[class^=styles__dropdown___2G4eg]")).shouldBe(visible);
             checkbox.click();
         }
@@ -187,8 +187,8 @@ public class Page {
         SelenideElement container = element(byCssSelector("[class^=styles__filter-list]")).shouldBe(visible);
         ElementsCollection containerElements = container.findAll(byClassName("styles__text___1Qlyb"));
         String sqlQuery;
-        for (SelenideElement containerElement:containerElements) {
-            switch (containerElement.text()){
+        for (SelenideElement containerElement : containerElements) {
+            switch (containerElement.text()) {
                 case "Энергосистема":
                     sqlQuery = "select distinct name from asm_geographical_region";
                     findingAndAssert(database, containerElement, sqlQuery);
@@ -217,7 +217,7 @@ public class Page {
         SelenideElement parentElement = containerElement.parent().parent().parent().parent();
         parentElement.click();
         ElementsCollection contents = parentElement.findAll(byCssSelector("label[class=styles__checkbox__content___3_xkR]"));
-        for (SelenideElement content:contents) {
+        for (SelenideElement content : contents) {
             nameOfElementsFromWeb.add(content.text());
         }
         nameOfElementsFromWeb.sort(Comparator.naturalOrder());
@@ -233,42 +233,128 @@ public class Page {
         SelenideElement parentElement = containerElement.parent().parent().parent().parent();
         parentElement.click();
         ElementsCollection contents = parentElement.findAll(byCssSelector("label[class=styles__checkbox__content___3_xkR]"));
-        for (SelenideElement content:contents) {
+        for (SelenideElement content : contents) {
             nameOfElementsFromWeb.add(String.valueOf(Integer.valueOf((int) Double.parseDouble(content.text().substring(0, 3)) * 1000)));
         }
         assertThat(nameOfElementsFromDb, equalTo(nameOfElementsFromWeb));
         parentElement.click();
     }
 
-    public void filteringByEnergoSystem(String energoSystemName) throws SQLException {
+    public void checkStateBeforeFiletringByEnergoSystem(String filterName, String energoSystemName) throws SQLException {
         Database database = new Database();
         database.connect();
         element(byCssSelector("li.styles__substation___1JooU")).shouldBe(visible);
         int initialNumberStationOfSystemFromDb = database.getNumberOfItems("select asm_substation.name from asm_substation left join asm_geographical_region on " +
-                "asm_substation.geographical_region_id = asm_geographical_region.\"id\" where asm_geographical_region.\"name\" = 'ЭС Юга'");
+                "asm_substation.geographical_region_id = asm_geographical_region.id where asm_geographical_region.name = 'ЭС Юга'");
+        int numberOfEnergoSystemsFromDb = database.getNumberOfItems("select name from asm_geographical_region");
         int initialNumberStationOfSystemFromWeb = 0;
         ElementsCollection initialContainers = elements(byCssSelector("li.styles__substation___1JooU"));
-        for (SelenideElement container:initialContainers) {
+        for (SelenideElement container : initialContainers) {
             String stationInfo = container.find(byClassName("styles__substation__info___31rGu")).text();
             String energoSystem = stationInfo.substring(0, stationInfo.indexOf('|') - 1);
-            if (energoSystem.equals(energoSystemName)){
+            if (energoSystem.equals(energoSystemName)) {
                 initialNumberStationOfSystemFromWeb++;
             }
         }
         assertThat(initialNumberStationOfSystemFromDb, equalTo(initialNumberStationOfSystemFromWeb));
+        assertThat(numberOfEnergoSystemsFromDb, equalTo(Integer.parseInt(element(withText(filterName))
+                .parent().parent().find(byCssSelector("span.styles__checkbox-list__count___2UoT9 span")).text())));
+    }
+
+    public void checkStateAfterFiletringByEnergoSystem(String filterName, String energoSystemName) throws SQLException {
+        Database database = new Database();
+        database.connect();
         int finalNumberStationOfSystemFromDb = database.getNumberOfItems("select asm_substation.name from asm_substation left join asm_geographical_region on" +
-                " asm_substation.geographical_region_id = asm_geographical_region.\"id\" where asm_geographical_region.\"name\" != 'ЭС Юга'");
-        int finalNumberStationOfSystemFromWeb = 0;
-        elements(byCssSelector("div.styles__text___1Qlyb")).findBy(text(energoSystemName)).click();
-        element(byCssSelector("label.styles__checkbox__icon___2jsv2")).click();
-        ElementsCollection finalContainers = elements(byCssSelector("li.styles__substation___1JooU"));
-        for (SelenideElement container:finalContainers){
-            String stationInfo = container.find(byClassName("styles__substation__info___31rGu")).text();
-            String energoSystem = stationInfo.substring(0, stationInfo.indexOf('|') - 1);
-            if (energoSystem.equals(energoSystemName)){
-                finalNumberStationOfSystemFromWeb++;
+                " asm_substation.geographical_region_id = asm_geographical_region.id where asm_geographical_region.name != 'ЭС Юга'");
+        if (elements(byCssSelector("li.styles__substation___1JooU")).size() == 0 && finalNumberStationOfSystemFromDb == 0) {
+            SelenideElement emptyList = element(byCssSelector("span.styles__list-empty___1_drg")).shouldBe(visible);
+            assertThat(emptyList.text(), equalTo("Нет подстанций соответствующих текущему состоянию фильтра"));
+        } else {
+            elements(byCssSelector("div.styles__text___1Qlyb")).findBy(text(energoSystemName)).click();
+            element(byCssSelector("label.styles__checkbox__icon___2jsv2")).click();
+            int finalNumberStationOfSystemFromWeb = 0;
+            ElementsCollection finalContainers = elements(byCssSelector("li.styles__substation___1JooU"));
+            for (SelenideElement container : finalContainers) {
+                String stationInfo = container.find(byClassName("styles__substation__info___31rGu")).text();
+                String energoSystem = stationInfo.substring(0, stationInfo.indexOf('|') - 1);
+                if (energoSystem.equals(energoSystemName)) {
+                    finalNumberStationOfSystemFromWeb++;
+                }
+                assertThat(finalNumberStationOfSystemFromDb, equalTo(finalNumberStationOfSystemFromWeb));
+                assertThat(finalNumberStationOfSystemFromDb, equalTo(Integer.parseInt(element(withText(filterName))
+                        .parent().parent().find(byCssSelector("span.styles__checkbox-list__count___2UoT9 span")).text())));
+                assertThat(colorToHex(element(withText(filterName)).parent().parent().find(byCssSelector("span.styles__checkbox-list__count___2UoT9 span"))), equalTo("#ff3434"));
             }
         }
-        assertThat(finalNumberStationOfSystemFromDb, equalTo(finalNumberStationOfSystemFromWeb));
+    }
+
+    public void checkStateBeforeFiltering(String filterName, String filterItem) throws SQLException {
+        Database database = new Database();
+        database.connect();
+        element(byCssSelector("li.styles__substation___1JooU")).shouldBe(visible);
+        String sqlQuery;
+        String sqlQueryNotFiltered;
+        switch (filterName) {
+            case "Энергосистема":
+                sqlQuery = "select asm_substation.name from asm_substation left join asm_geographical_region on" +
+                        " asm_substation.geographical_region_id = asm_geographical_region.id where asm_geographical_region.name = " + "'" + filterItem + "'";
+                sqlQueryNotFiltered = "select distinct asm_substation.name from asm_substation left join asm_geographical_region on" +
+                        " asm_substation.geographical_region_id = asm_geographical_region.id";
+                break;
+            case "Диспетчер":
+                sqlQuery = "select asm_substation.name from asm_substation left join asm_company on" +
+                        " asm_substation.operator_id = asm_company.id where asm_company.name = " + "'" + filterItem + "'";
+                sqlQueryNotFiltered = "select distinct asm_company.name from asm_substation left join asm_company on" +
+                        " asm_substation.operator_id = asm_company.id";
+                break;
+            case "Собственник":
+                sqlQuery = "select asm_substation.name from asm_substation left join asm_company on" +
+                        " asm_substation.owner_id = asm_company.id where asm_company.name = " + "'" + filterItem + "'";
+                sqlQueryNotFiltered = "select distinct asm_company.name from asm_substation left join asm_company on" +
+                        " asm_substation.owner_id = asm_company.id";
+                break;
+            case "Класс напряжения":
+                int voltage = (int) (Double.parseDouble(filterItem.split(" ")[0]) * 1000);
+                sqlQuery = "select distinct asm_substation.name from asm_substation left join asm_switchgear on" +
+                        " asm_substation.id = asm_switchgear.substation_id left join asm_base_voltage on" +
+                        " asm_switchgear.base_voltage_id = asm_base_voltage.id where asm_base_voltage.nominal = " + voltage + " group by asm_substation.name";
+                sqlQueryNotFiltered = "select distinct max (asm_base_voltage.nominal) from asm_substation left join asm_switchgear on" +
+                        " asm_substation.id = asm_switchgear.substation_id left join asm_base_voltage on" +
+                        " asm_switchgear.base_voltage_id = asm_base_voltage.id group by asm_substation.name";
+                break;
+            default:
+                throw new IllegalStateException("Unexpected value: " + filterName);
+        }
+        int initialNumberItemsFromDb = database.getNumberOfItems(sqlQuery);
+        int numberOfNotFilteredItemsFromDb = database.getNumberOfItems(sqlQueryNotFiltered); // не помню зачем делал переменную
+        int initialNumberItemsFromWeb = 0;
+        ElementsCollection initialContainers = elements(byCssSelector("li.styles__substation___1JooU"));
+        for (SelenideElement container : initialContainers) {
+            String[] itemInfo = container.find(byClassName("styles__substation__info___31rGu")).text().split(" \\| ");
+//            String[] voltageInfo = container.find(byCssSelector("span.styles__substation__voltage___GmCRg")).text().split(" ");
+            String itemValue;
+            switch (filterName) {
+                case "Энергосистема":
+                    itemValue = itemInfo[0];
+                    break;
+                case "Диспетчер":
+                    itemValue = itemInfo[1];
+                    break;
+                case "Собственник":
+                    itemValue = itemInfo[2];
+                    break;
+                case "Класс напряжения":
+                    itemValue = container.find(byCssSelector("span.styles__substation__voltage___GmCRg")).text();
+//                    itemValue = voltageInfo[0];
+                    break;
+                default:
+                    throw new IllegalStateException("Unexpected value: " + filterName);
+            }
+            if (itemValue.equals(filterItem)){
+                initialNumberItemsFromWeb++;
+            }
+        }
+        assertThat(initialNumberItemsFromDb, equalTo(initialNumberItemsFromWeb));
+        System.out.println(initialNumberItemsFromDb + "  " + initialNumberItemsFromWeb);
     }
 }

@@ -5,6 +5,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import ru.rtsoft.qa.asmrza.testconfigs.BaseTest;
 import ru.rtsoft.qa.asmrza.widgets.Database;
+import ru.rtsoft.qa.asmrza.widgets.Filter;
 import ru.rtsoft.qa.asmrza.widgets.Page;
 
 import java.sql.SQLException;
@@ -112,13 +113,32 @@ public class AsmrzaMainPageTests extends BaseTest {
     @Test
     public void filteringCheck() throws SQLException {
         Page mainPage = new Page();
-        mainPage.checkStateBeforeFiltering("Класс напряжения", "220 кВ");
-//        mainPage.checkStateBeforeFiletringByEnergoSystem("Энергосистема", "ЭС Юга");
-//        Filter filter = new Filter();
-//        filter.openDropDownMenuFor("Энергосистема");
-//        filter.filteringBy("Энергосистема","ЭС Юга");
-//        mainPage.checkStateAfterFiletringByEnergoSystem("Энергосистема","ЭС Юга");
-//        filter.dropFilters();
-//        mainPage.checkStateBeforeFiletringByOperator("Диспетчер", "Кубанское РДУ");
+        Filter filter = new Filter();
+        String filterName = "Энергосистема";
+        String filterBy = "ЭС Юга";
+        mainPage.checkStateBeforeFiltering(filterName, filterBy);
+        filter.openDropDownMenuFor(filterName);
+        filter.filteringBy(filterName, filterBy);
+        mainPage.checkStateAfterFiltering(filterName, filterBy);
+        filter.dropFilters();
+        filterName = "Диспетчер";
+        filterBy = "Кубанское РДУ";
+        mainPage.checkStateBeforeFiltering(filterName, filterBy);
+        filter.openDropDownMenuFor(filterName);
+        filter.filteringBy(filterName, filterBy);
+        mainPage.checkStateAfterFiltering(filterName, filterBy);
+        filter.dropFilters();
+        filterName = "Собственник";
+        filterBy = "Кубанское ПМЭС";
+        mainPage.checkStateBeforeFiltering(filterName, filterBy);
+        filter.openDropDownMenuFor(filterName);
+        filter.filteringBy(filterName, filterBy);
+        mainPage.checkStateAfterFiltering(filterName, filterBy);
+        filterBy = "ОАО «Сочинская ТЭС»";
+        mainPage.checkStateBeforeFiltering(filterName, filterBy);
+        filter.openDropDownMenuFor(filterName);
+        filter.filteringBy(filterName, filterBy);
+        mainPage.checkStateAfterFiltering(filterName, filterBy);
+        filter.dropFilters();
     }
 }

@@ -8,7 +8,7 @@ public class BaseTest {
     static {
         Configuration.baseUrl = "http://192.168.10.61";
         Configuration.startMaximized = true;
-        Configuration.screenshots = false;
+//        Configuration.screenshots = true;
 //        Configuration.browser = "firefox";
 //        ChromeOptions options = new ChromeOptions();
 //        options.setExperimentalOption("useAutomationExtension", false);

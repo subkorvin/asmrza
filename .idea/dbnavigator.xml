@@ -71,7 +71,15 @@ left join asm_base_voltage on asm_switchgear.base_voltage_id = asm_base_voltage.
 group by asm_substation.name
 
 select distinct asm_substation.name from asm_substation left join asm_switchgear on asm_substation.id = asm_switchgear.substation_id
- left join asm_base_voltage on asm_switchgear.base_voltage_id = asm_base_voltage.id where asm_base_voltage.nominal = 220000 group by asm_substation.name]]></console>
+ left join asm_base_voltage on asm_switchgear.base_voltage_id = asm_base_voltage.id where asm_base_voltage.nominal = 220000 group by asm_substation.name
+
+select distinct asm_company.name from asm_substation left join asm_company on asm_substation.owner_id = asm_company.id
+
+select distinct asm_geographical_region.name from asm_substation left join asm_geographical_region on asm_substation.geographical_region_id = asm_geographical_region.id
+
+select distinct asm_company.name from asm_substation left join asm_company on asm_substation.operator_id = asm_company.id
+
+select distinct max (asm_base_voltage.nominal) from asm_substation left join asm_switchgear on asm_substation.id = asm_switchgear.substation_id left join asm_base_voltage on asm_switchgear.base_voltage_id = asm_base_voltage.id group by asm_substation.name]]></console>
     </connection>
   </component>
   <component name="DBNavigator.Project.DatabaseFileManager">

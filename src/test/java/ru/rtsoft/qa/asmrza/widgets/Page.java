@@ -298,7 +298,7 @@ public class Page {
             case "Энергосистема":
                 sqlQuery = "select asm_substation.name from asm_substation left join asm_geographical_region on" +
                         " asm_substation.geographical_region_id = asm_geographical_region.id where asm_geographical_region.name = " + "'" + filterItem + "'";
-                sqlQueryNotFiltered = "select distinct asm_substation.name from asm_substation left join asm_geographical_region on" +
+                sqlQueryNotFiltered = "select distinct asm_geographical_region.name from asm_substation left join asm_geographical_region on" +
                         " asm_substation.geographical_region_id = asm_geographical_region.id";
                 break;
             case "Диспетчер":
@@ -326,7 +326,7 @@ public class Page {
                 throw new IllegalStateException("Unexpected value: " + filterName);
         }
         int initialNumberItemsFromDb = database.getNumberOfItems(sqlQuery);
-        int numberOfNotFilteredItemsFromDb = database.getNumberOfItems(sqlQueryNotFiltered); // не помню зачем делал переменную
+        int numberOfNotFilteredItemsFromDb = database.getNumberOfItems(sqlQueryNotFiltered); // для проверки количества объектов в фильтре (Собственник 3 из 3, например)
         int initialNumberItemsFromWeb = 0;
         ElementsCollection initialContainers = elements(byCssSelector("li.styles__substation___1JooU"));
         for (SelenideElement container : initialContainers) {
@@ -350,11 +350,92 @@ public class Page {
                 default:
                     throw new IllegalStateException("Unexpected value: " + filterName);
             }
-            if (itemValue.equals(filterItem)){
+            if (itemValue.equals(filterItem)) {
                 initialNumberItemsFromWeb++;
             }
         }
         assertThat(initialNumberItemsFromDb, equalTo(initialNumberItemsFromWeb));
         System.out.println(initialNumberItemsFromDb + "  " + initialNumberItemsFromWeb);
+        assertThat(numberOfNotFilteredItemsFromDb, equalTo(Integer.parseInt(element(withText(filterName))
+                .parent().parent().find(byCssSelector("span.styles__checkbox-list__count___2UoT9 span")).text())));
+    }
+
+    public void checkStateAfterFiltering(String filterName, String filterItem) throws SQLException {
+        Database database = new Database();
+        database.connect();
+        String sqlQuery;
+        String sqlQueryNotFiltered;
+        switch (filterName) {
+            case "Энергосистема":
+                sqlQuery = "select asm_substation.name from asm_substation left join asm_geographical_region on" +
+                        " asm_substation.geographical_region_id = asm_geographical_region.id where asm_geographical_region.name != " + "'" + filterItem + "'";
+                sqlQueryNotFiltered = "select distinct asm_substation.name from asm_substation left join asm_geographical_region on" +
+                        " asm_substation.geographical_region_id = asm_geographical_region.id";
+                break;
+            case "Диспетчер":
+                sqlQuery = "select asm_substation.name from asm_substation left join asm_company on" +
+                        " asm_substation.operator_id = asm_company.id where asm_company.name != " + "'" + filterItem + "'";
+                sqlQueryNotFiltered = "select distinct asm_company.name from asm_substation left join asm_company on" +
+                        " asm_substation.operator_id = asm_company.id";
+                break;
+            case "Собственник":
+                sqlQuery = "select asm_substation.name from asm_substation left join asm_company on" +
+                        " asm_substation.owner_id = asm_company.id where asm_company.name != " + "'" + filterItem + "'";
+                sqlQueryNotFiltered = "select distinct asm_company.name from asm_substation left join asm_company on" +
+                        " asm_substation.owner_id = asm_company.id";
+                break;
+            case "Класс напряжения":
+                int voltage = (int) (Double.parseDouble(filterItem.split(" ")[0]) * 1000);
+                sqlQuery = "select distinct asm_substation.name from asm_substation left join asm_switchgear on" +
+                        " asm_substation.id = asm_switchgear.substation_id left join asm_base_voltage on" +
+                        " asm_switchgear.base_voltage_id = asm_base_voltage.id where asm_base_voltage.nominal != " + voltage + " group by asm_substation.name";
+                sqlQueryNotFiltered = "select distinct max (asm_base_voltage.nominal) from asm_substation left join asm_switchgear on" +
+                        " asm_substation.id = asm_switchgear.substation_id left join asm_base_voltage on" +
+                        " asm_switchgear.base_voltage_id = asm_base_voltage.id group by asm_substation.name";
+                break;
+            default:
+                throw new IllegalStateException("Unexpected value: " + filterName);
+        }
+        int finalNumberItemsFromDb = database.getNumberOfItems(sqlQuery);
+        int finalNumberItemsFromWeb = 0;
+        if (elements(byCssSelector("li.styles__substation___1JooU")).size() == 0 && finalNumberItemsFromDb == 0) {
+            SelenideElement emptyList = element(byCssSelector("span.styles__list-empty___1_drg")).shouldBe(visible);
+            assertThat(emptyList.text(), equalTo("Нет подстанций соответствующих текущему состоянию фильтра"));
+        } else {
+//            elements(byCssSelector("div.styles__text___1Qlyb")).findBy(text(filterName)).click();
+//            elements(byCssSelector("label.styles__checkbox__icon___2jsv2")).findBy(text(filterItem)).click();
+            ElementsCollection finalContainers = elements(byCssSelector("li.styles__substation___1JooU"));
+            for (SelenideElement container : finalContainers) {
+                String[] itemInfo = container.find(byClassName("styles__substation__info___31rGu")).text().split(" \\| ");
+                String itemValue;
+                switch (filterName) {
+                    case "Энергосистема":
+                        itemValue = itemInfo[0];
+                        break;
+                    case "Диспетчер":
+                        itemValue = itemInfo[1];
+                        break;
+                    case "Собственник":
+                        itemValue = itemInfo[2];
+                        break;
+                    case "Класс напряжения":
+                        itemValue = container.find(byCssSelector("span.styles__substation__voltage___GmCRg")).text();
+//                    itemValue = voltageInfo[0];
+                        break;
+                    default:
+                        throw new IllegalStateException("Unexpected value: " + filterName);
+                }
+                if (!itemValue.equals(filterItem)) {
+                    finalNumberItemsFromWeb++;
+                }
+            }
+        }
+        assertThat(finalNumberItemsFromWeb, equalTo(finalNumberItemsFromDb));
+        System.out.println(finalNumberItemsFromWeb + "  " + finalNumberItemsFromDb);
+        assertThat(finalNumberItemsFromDb, equalTo(Integer.parseInt(element(withText(filterName))
+                .parent().parent().find(byCssSelector("span.styles__checkbox-list__count___2UoT9 span")).text())));
+        if (finalNumberItemsFromDb == 0) {
+            assertThat(colorToHex(element(withText(filterName)).parent().parent().find(byCssSelector("span.styles__checkbox-list__count___2UoT9 span"))), equalTo("#ff3434"));
+        }
     }
 }

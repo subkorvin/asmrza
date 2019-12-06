@@ -27,17 +27,18 @@ public class Filter {
     }
 
 
-    public void filteringBy(String filterName, String filterBy) {
+    public void filteringBy(String filterName, String filterItem) {
         SelenideElement filterBar = element(byCssSelector("[class^=styles__filter-list]")).shouldBe(visible);
         SelenideElement dropDownMenu = filterBar.findAll(byClassName("styles__text___1Qlyb")).findBy(text(filterName));
         SelenideElement dropDownList = dropDownMenu.parent().parent().parent().parent().find(byCssSelector("div.styles__scrollbar___1GbIe "));
-        SelenideElement dropDownMenuItem = dropDownList.find(byText(filterBy)).parent().find(byCssSelector("span.styles__checkbox__container___3smLo"));
+        SelenideElement dropDownMenuItem = dropDownList.find(byText(filterItem)).parent().find(byCssSelector("span.styles__checkbox__container___3smLo"));
         dropDownMenuItem.click();
     }
 
     public void dropFilters() {
         SelenideElement filterBar = element(byCssSelector("div[class^=styles__filter-list]")).shouldBe(visible);
-        SelenideElement dropFilterButton = filterBar.find(byCssSelector("button.styles__button___Fbunz styles__button_s___240cs styles__button__transparent___2euQU styles__filter-list__btn___15lOn"));
+//        SelenideElement dropFilterButton = filterBar.find(byCssSelector("button.styles__button___Fbunz styles__button_s___240cs styles__button__transparent___2euQU styles__filter-list__btn___15lOn"));
+        SelenideElement dropFilterButton = filterBar.find(byCssSelector("button[type=button]"));
         if (dropFilterButton.isDisplayed()){
             dropFilterButton.click();
         }

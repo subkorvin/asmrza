@@ -11,6 +11,7 @@ import ru.rtsoft.qa.asmrza.widgets.Page;
 import java.sql.SQLException;
 import java.util.List;
 
+import static com.codeborne.selenide.Selenide.sleep;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -114,31 +115,30 @@ public class AsmrzaMainPageTests extends BaseTest {
     public void filteringCheck() throws SQLException {
         Page mainPage = new Page();
         Filter filter = new Filter();
-        String filterName = "Энергосистема";
-        String filterBy = "ЭС Юга";
+        String filterName = "Собственник";
+        String[] filterBy = {"Кубанское ПМЭС", "ОАО «Сочинская ТЭС»"};
         mainPage.checkStateBeforeFiltering(filterName, filterBy);
         filter.openDropDownMenuFor(filterName);
         filter.filteringBy(filterName, filterBy);
-        mainPage.checkStateAfterFiltering(filterName, filterBy);
-        filter.dropFilters();
-        filterName = "Диспетчер";
-        filterBy = "Кубанское РДУ";
-        mainPage.checkStateBeforeFiltering(filterName, filterBy);
-        filter.openDropDownMenuFor(filterName);
-        filter.filteringBy(filterName, filterBy);
-        mainPage.checkStateAfterFiltering(filterName, filterBy);
-        filter.dropFilters();
-        filterName = "Собственник";
-        filterBy = "Кубанское ПМЭС";
-        mainPage.checkStateBeforeFiltering(filterName, filterBy);
-        filter.openDropDownMenuFor(filterName);
-        filter.filteringBy(filterName, filterBy);
-        mainPage.checkStateAfterFiltering(filterName, filterBy);
-        filterBy = "ОАО «Сочинская ТЭС»";
-        mainPage.checkStateBeforeFiltering(filterName, filterBy);
-        filter.openDropDownMenuFor(filterName);
-        filter.filteringBy(filterName, filterBy);
-        mainPage.checkStateAfterFiltering(filterName, filterBy);
-        filter.dropFilters();
+        sleep(3000);
+//        mainPage.checkStateAfterFiltering(filterName, filterBy);
+//        filter.dropFilters();
+//        filterName = "Диспетчер";
+//        filterBy = "Кубанское РДУ";
+//        mainPage.checkStateBeforeFiltering(filterName, filterBy);
+//        filter.openDropDownMenuFor(filterName);
+//        filter.filteringBy(filterName, filterBy);
+//        mainPage.checkStateAfterFiltering(filterName, filterBy);
+//        filter.dropFilters();
+//        filterName = "Собственник";
+//        filterBy = "Кубанское ПМЭС";
+//        mainPage.checkStateBeforeFiltering(filterName, filterBy);
+//        filter.openDropDownMenuFor(filterName);
+//        filter.filteringBy(filterName, filterBy);
+//        filterBy = "ОАО «Сочинская ТЭС»";
+//        filter.openDropDownMenuFor(filterName);
+//        filter.filteringBy(filterName, filterBy);
+//        mainPage.checkStateAfterFiltering(filterName, filterBy);
+//        filter.dropFilters();
     }
 }

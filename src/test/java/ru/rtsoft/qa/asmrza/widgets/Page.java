@@ -288,28 +288,39 @@ public class Page {
         }
     }
 
-    public void checkStateBeforeFiltering(String filterName, String filterItem) throws SQLException {
+    public void checkStateBeforeFiltering(String filterName, String[] filterItems) throws SQLException {
         Database database = new Database();
         database.connect();
         element(byCssSelector("li.styles__substation___1JooU")).shouldBe(visible);
         String sqlQuery;
         String sqlQueryNotFiltered;
+        String sqlAdd = "";
+        int sqlAddVoltage = 0;
+        for (int i=0; i < filterItems.length; i++) {
+            if (i == filterItems.length - 1){
+                sqlAdd = sqlAdd + "'" + filterItems[i] + "'";
+
+            } else {
+                sqlAdd = sqlAdd + "'" + filterItems[i] + "', ";
+            }
+        }
         switch (filterName) {
             case "Энергосистема":
-                sqlQuery = "select asm_substation.name from asm_substation left join asm_geographical_region on" +
-                        " asm_substation.geographical_region_id = asm_geographical_region.id where asm_geographical_region.name = " + "'" + filterItem + "'";
+                    sqlQuery = "select asm_substation.name from asm_substation left join asm_geographical_region on" +
+                            " asm_substation.geographical_region_id = asm_geographical_region.id where asm_geographical_region.name in (" + sqlAdd + ")";
+//                }
                 sqlQueryNotFiltered = "select distinct asm_geographical_region.name from asm_substation left join asm_geographical_region on" +
                         " asm_substation.geographical_region_id = asm_geographical_region.id";
                 break;
             case "Диспетчер":
                 sqlQuery = "select asm_substation.name from asm_substation left join asm_company on" +
-                        " asm_substation.operator_id = asm_company.id where asm_company.name = " + "'" + filterItem + "'";
+                        " asm_substation.operator_id = asm_company.id where asm_company.name in (" + sqlAdd + ")";
                 sqlQueryNotFiltered = "select distinct asm_company.name from asm_substation left join asm_company on" +
                         " asm_substation.operator_id = asm_company.id";
                 break;
             case "Собственник":
                 sqlQuery = "select asm_substation.name from asm_substation left join asm_company on" +
-                        " asm_substation.owner_id = asm_company.id where asm_company.name = " + "'" + filterItem + "'";
+                        " asm_substation.owner_id = asm_company.id where asm_company.name in (" + sqlAdd + ")";
                 sqlQueryNotFiltered = "select distinct asm_company.name from asm_substation left join asm_company on" +
                         " asm_substation.owner_id = asm_company.id";
                 break;
@@ -350,8 +361,10 @@ public class Page {
                 default:
                     throw new IllegalStateException("Unexpected value: " + filterName);
             }
-            if (itemValue.equals(filterItem)) {
-                initialNumberItemsFromWeb++;
+            for (String filterItem: filterItems) {
+                if (itemValue.equals(filterItem)) {
+                    initialNumberItemsFromWeb++;
+                }
             }
         }
         assertThat(initialNumberItemsFromDb, equalTo(initialNumberItemsFromWeb));

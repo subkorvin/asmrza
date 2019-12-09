@@ -25,8 +25,8 @@
     <show-object-properties value="true" />
     <loaded-nodes>
       <connection connection-id="98d23dc6-9321-4c01-9a08-bb68dd226f3b">
-        <schema name="pg_catalog" object-types="table, view, function" />
-        <schema name="public" object-types="column, table, view, function" />
+        <schema name="pg_catalog" object-types="function, view, table" />
+        <schema name="public" object-types="function, column, view, table" />
       </connection>
     </loaded-nodes>
   </component>
@@ -63,7 +63,9 @@ select asm_substation.name from asm_substation left join asm_geographical_region
 
 select asm_substation.name from asm_substation left join asm_company on asm_substation.operator_id = asm_company.id where asm_company.name = 'Кубанское РДУ'
 
-select asm_substation.name from asm_substation left join asm_company on asm_substation.owner_id = asm_company.id where asm_company.name = 'Кубанское РДУ'
+select asm_substation.name from asm_substation left join asm_company on asm_substation.owner_id = asm_company.id where asm_company.name not in ('ПАО "ОГК-2', 'Кубанское ПМЭС')
+
+select asm_substation.name from asm_substation left join asm_company on asm_substation.owner_id = asm_company.id where asm_company.name in ('Кубанское ПМЭС', 'ОАО «Сочинская ТЭС»')
 
 
 select distinct max (asm_base_voltage.nominal) from asm_substation left join asm_switchgear on asm_substation.id = asm_switchgear.substation_id

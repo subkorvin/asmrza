@@ -12,7 +12,9 @@ import static com.codeborne.selenide.Condition.*;
 import static com.codeborne.selenide.Selectors.*;
 import static com.codeborne.selenide.Selenide.*;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
+import static org.testng.Assert.assertTrue;
 
 
 public class Page {
@@ -165,7 +167,7 @@ public class Page {
 
     public void filterControlsPresenceCheck() {
         SelenideElement container = element(byCssSelector("[class^=styles__filter-list]")).shouldBe(visible);
-        List<String> filtersExpected = Arrays.asList(new String[]{"Энергосистема", "Диспетчер", "Собственник", "Класс напряжения", "Смежные объекты"});
+        List<String> filtersExpected = Arrays.asList("Энергосистема", "Диспетчер", "Собственник", "Класс напряжения", "Смежные объекты");
         ArrayList<String> filtersActual = new ArrayList<>();
         ElementsCollection elements = container.findAll(byClassName("styles__text___1Qlyb"));
         for (SelenideElement element : elements) {
@@ -240,54 +242,6 @@ public class Page {
         parentElement.click();
     }
 
-    public void checkStateBeforeFiletringByEnergoSystem(String filterName, String energoSystemName) throws SQLException {
-        Database database = new Database();
-        database.connect();
-        element(byCssSelector("li.styles__substation___1JooU")).shouldBe(visible);
-        int initialNumberStationOfSystemFromDb = database.getNumberOfItems("select asm_substation.name from asm_substation left join asm_geographical_region on " +
-                "asm_substation.geographical_region_id = asm_geographical_region.id where asm_geographical_region.name = 'ЭС Юга'");
-        int numberOfEnergoSystemsFromDb = database.getNumberOfItems("select name from asm_geographical_region");
-        int initialNumberStationOfSystemFromWeb = 0;
-        ElementsCollection initialContainers = elements(byCssSelector("li.styles__substation___1JooU"));
-        for (SelenideElement container : initialContainers) {
-            String stationInfo = container.find(byClassName("styles__substation__info___31rGu")).text();
-            String energoSystem = stationInfo.substring(0, stationInfo.indexOf('|') - 1);
-            if (energoSystem.equals(energoSystemName)) {
-                initialNumberStationOfSystemFromWeb++;
-            }
-        }
-        assertThat(initialNumberStationOfSystemFromDb, equalTo(initialNumberStationOfSystemFromWeb));
-        assertThat(numberOfEnergoSystemsFromDb, equalTo(Integer.parseInt(element(withText(filterName))
-                .parent().parent().find(byCssSelector("span.styles__checkbox-list__count___2UoT9 span")).text())));
-    }
-
-    public void checkStateAfterFiletringByEnergoSystem(String filterName, String energoSystemName) throws SQLException {
-        Database database = new Database();
-        database.connect();
-        int finalNumberStationOfSystemFromDb = database.getNumberOfItems("select asm_substation.name from asm_substation left join asm_geographical_region on" +
-                " asm_substation.geographical_region_id = asm_geographical_region.id where asm_geographical_region.name != 'ЭС Юга'");
-        if (elements(byCssSelector("li.styles__substation___1JooU")).size() == 0 && finalNumberStationOfSystemFromDb == 0) {
-            SelenideElement emptyList = element(byCssSelector("span.styles__list-empty___1_drg")).shouldBe(visible);
-            assertThat(emptyList.text(), equalTo("Нет подстанций соответствующих текущему состоянию фильтра"));
-        } else {
-            elements(byCssSelector("div.styles__text___1Qlyb")).findBy(text(energoSystemName)).click();
-            element(byCssSelector("label.styles__checkbox__icon___2jsv2")).click();
-            int finalNumberStationOfSystemFromWeb = 0;
-            ElementsCollection finalContainers = elements(byCssSelector("li.styles__substation___1JooU"));
-            for (SelenideElement container : finalContainers) {
-                String stationInfo = container.find(byClassName("styles__substation__info___31rGu")).text();
-                String energoSystem = stationInfo.substring(0, stationInfo.indexOf('|') - 1);
-                if (energoSystem.equals(energoSystemName)) {
-                    finalNumberStationOfSystemFromWeb++;
-                }
-                assertThat(finalNumberStationOfSystemFromDb, equalTo(finalNumberStationOfSystemFromWeb));
-                assertThat(finalNumberStationOfSystemFromDb, equalTo(Integer.parseInt(element(withText(filterName))
-                        .parent().parent().find(byCssSelector("span.styles__checkbox-list__count___2UoT9 span")).text())));
-                assertThat(colorToHex(element(withText(filterName)).parent().parent().find(byCssSelector("span.styles__checkbox-list__count___2UoT9 span"))), equalTo("#ff3434"));
-            }
-        }
-    }
-
     public void checkStateBeforeFiltering(String filterName, String[] filterItems) throws SQLException {
         Database database = new Database();
         database.connect();
@@ -295,19 +249,26 @@ public class Page {
         String sqlQuery;
         String sqlQueryNotFiltered;
         String sqlAdd = "";
-        int sqlAddVoltage = 0;
-        for (int i=0; i < filterItems.length; i++) {
-            if (i == filterItems.length - 1){
-                sqlAdd = sqlAdd + "'" + filterItems[i] + "'";
-
+        String sqlAddVoltage = "";
+        for (int i = 0; i < filterItems.length; i++) {
+            if (i == filterItems.length - 1) {
+                if (!filterName.equals("Класс напряжения")) {
+                    sqlAdd = sqlAdd + "'" + filterItems[i] + "'";
+                } else {
+                    sqlAddVoltage = sqlAddVoltage + (int) (Double.parseDouble(filterItems[i].split(" ")[0]) * 1000);
+                }
             } else {
-                sqlAdd = sqlAdd + "'" + filterItems[i] + "', ";
+                if (!filterName.equals("Класс напряжения")) {
+                    sqlAdd = sqlAdd + "'" + filterItems[i] + "', ";
+                } else {
+                    sqlAddVoltage = sqlAddVoltage + (int) (Double.parseDouble(filterItems[i].split(" ")[0]) * 1000) + ", ";
+                }
             }
         }
         switch (filterName) {
             case "Энергосистема":
-                    sqlQuery = "select asm_substation.name from asm_substation left join asm_geographical_region on" +
-                            " asm_substation.geographical_region_id = asm_geographical_region.id where asm_geographical_region.name in (" + sqlAdd + ")";
+                sqlQuery = "select asm_substation.name from asm_substation left join asm_geographical_region on" +
+                        " asm_substation.geographical_region_id = asm_geographical_region.id where asm_geographical_region.name in (" + sqlAdd + ")";
 //                }
                 sqlQueryNotFiltered = "select distinct asm_geographical_region.name from asm_substation left join asm_geographical_region on" +
                         " asm_substation.geographical_region_id = asm_geographical_region.id";
@@ -325,10 +286,9 @@ public class Page {
                         " asm_substation.owner_id = asm_company.id";
                 break;
             case "Класс напряжения":
-                int voltage = (int) (Double.parseDouble(filterItem.split(" ")[0]) * 1000);
                 sqlQuery = "select distinct asm_substation.name from asm_substation left join asm_switchgear on" +
                         " asm_substation.id = asm_switchgear.substation_id left join asm_base_voltage on" +
-                        " asm_switchgear.base_voltage_id = asm_base_voltage.id where asm_base_voltage.nominal = " + voltage + " group by asm_substation.name";
+                        " asm_switchgear.base_voltage_id = asm_base_voltage.id where asm_base_voltage.nominal in (" + sqlAddVoltage + ")" + "group by asm_substation.name";
                 sqlQueryNotFiltered = "select distinct max (asm_base_voltage.nominal) from asm_substation left join asm_switchgear on" +
                         " asm_substation.id = asm_switchgear.substation_id left join asm_base_voltage on" +
                         " asm_switchgear.base_voltage_id = asm_base_voltage.id group by asm_substation.name";
@@ -342,7 +302,6 @@ public class Page {
         ElementsCollection initialContainers = elements(byCssSelector("li.styles__substation___1JooU"));
         for (SelenideElement container : initialContainers) {
             String[] itemInfo = container.find(byClassName("styles__substation__info___31rGu")).text().split(" \\| ");
-//            String[] voltageInfo = container.find(byCssSelector("span.styles__substation__voltage___GmCRg")).text().split(" ");
             String itemValue;
             switch (filterName) {
                 case "Энергосистема":
@@ -356,12 +315,11 @@ public class Page {
                     break;
                 case "Класс напряжения":
                     itemValue = container.find(byCssSelector("span.styles__substation__voltage___GmCRg")).text();
-//                    itemValue = voltageInfo[0];
                     break;
                 default:
                     throw new IllegalStateException("Unexpected value: " + filterName);
             }
-            for (String filterItem: filterItems) {
+            for (String filterItem : filterItems) {
                 if (itemValue.equals(filterItem)) {
                     initialNumberItemsFromWeb++;
                 }
@@ -373,51 +331,57 @@ public class Page {
                 .parent().parent().find(byCssSelector("span.styles__checkbox-list__count___2UoT9 span")).text())));
     }
 
-    public void checkStateAfterFiltering(String filterName, String filterItem) throws SQLException {
+    public void checkStateAfterFiltering(String filterName, String[] filterItems) throws SQLException {
         Database database = new Database();
         database.connect();
         String sqlQuery;
-        String sqlQueryNotFiltered;
+        String sqlAdd = "";
+        String sqlAddVoltage = "";
+        Boolean flag = true;
+        ElementsCollection finalContainers = null;
+        for (int i = 0; i < filterItems.length; i++) {
+            if (i == filterItems.length - 1) {
+                if (!filterName.equals("Класс напряжения")) {
+                    sqlAdd = sqlAdd + "'" + filterItems[i] + "'";
+                } else {
+                    sqlAddVoltage = sqlAddVoltage + (int) (Double.parseDouble(filterItems[i].split(" ")[0]) * 1000);
+                }
+            } else {
+                if (!filterName.equals("Класс напряжения")) {
+                    sqlAdd = sqlAdd + "'" + filterItems[i] + "', ";
+                } else {
+                    sqlAddVoltage = sqlAddVoltage + (int) (Double.parseDouble(filterItems[i].split(" ")[0]) * 1000) + ", ";
+                }
+            }
+        }
         switch (filterName) {
             case "Энергосистема":
                 sqlQuery = "select asm_substation.name from asm_substation left join asm_geographical_region on" +
-                        " asm_substation.geographical_region_id = asm_geographical_region.id where asm_geographical_region.name != " + "'" + filterItem + "'";
-                sqlQueryNotFiltered = "select distinct asm_substation.name from asm_substation left join asm_geographical_region on" +
-                        " asm_substation.geographical_region_id = asm_geographical_region.id";
+                        " asm_substation.geographical_region_id = asm_geographical_region.id where asm_geographical_region.name not in (" + sqlAdd + ")";
                 break;
             case "Диспетчер":
                 sqlQuery = "select asm_substation.name from asm_substation left join asm_company on" +
-                        " asm_substation.operator_id = asm_company.id where asm_company.name != " + "'" + filterItem + "'";
-                sqlQueryNotFiltered = "select distinct asm_company.name from asm_substation left join asm_company on" +
-                        " asm_substation.operator_id = asm_company.id";
+                        " asm_substation.operator_id = asm_company.id where asm_company.name not in (" + sqlAdd + ")";
                 break;
             case "Собственник":
                 sqlQuery = "select asm_substation.name from asm_substation left join asm_company on" +
-                        " asm_substation.owner_id = asm_company.id where asm_company.name != " + "'" + filterItem + "'";
-                sqlQueryNotFiltered = "select distinct asm_company.name from asm_substation left join asm_company on" +
-                        " asm_substation.owner_id = asm_company.id";
+                        " asm_substation.owner_id = asm_company.id where asm_company.name not in (" + sqlAdd + ")";
                 break;
             case "Класс напряжения":
-                int voltage = (int) (Double.parseDouble(filterItem.split(" ")[0]) * 1000);
-                sqlQuery = "select distinct asm_substation.name from asm_substation left join asm_switchgear on" +
-                        " asm_substation.id = asm_switchgear.substation_id left join asm_base_voltage on" +
-                        " asm_switchgear.base_voltage_id = asm_base_voltage.id where asm_base_voltage.nominal != " + voltage + " group by asm_substation.name";
-                sqlQueryNotFiltered = "select distinct max (asm_base_voltage.nominal) from asm_substation left join asm_switchgear on" +
-                        " asm_substation.id = asm_switchgear.substation_id left join asm_base_voltage on" +
-                        " asm_switchgear.base_voltage_id = asm_base_voltage.id group by asm_substation.name";
+                sqlQuery = "select distinct asm_substation.name from asm_substation left join asm_switchgear on " +
+                        "asm_substation.id = asm_switchgear.substation_id left join asm_base_voltage on" +
+                        " asm_switchgear.base_voltage_id = asm_base_voltage.id where asm_base_voltage.nominal = (select max(asm_base_voltage.nominal)" +
+                        " from asm_base_voltage) and asm_base_voltage.nominal not in (" + sqlAddVoltage + ") group by asm_substation.name";
                 break;
             default:
                 throw new IllegalStateException("Unexpected value: " + filterName);
         }
         int finalNumberItemsFromDb = database.getNumberOfItems(sqlQuery);
-        int finalNumberItemsFromWeb = 0;
         if (elements(byCssSelector("li.styles__substation___1JooU")).size() == 0 && finalNumberItemsFromDb == 0) {
             SelenideElement emptyList = element(byCssSelector("span.styles__list-empty___1_drg")).shouldBe(visible);
             assertThat(emptyList.text(), equalTo("Нет подстанций соответствующих текущему состоянию фильтра"));
         } else {
-//            elements(byCssSelector("div.styles__text___1Qlyb")).findBy(text(filterName)).click();
-//            elements(byCssSelector("label.styles__checkbox__icon___2jsv2")).findBy(text(filterItem)).click();
-            ElementsCollection finalContainers = elements(byCssSelector("li.styles__substation___1JooU"));
+            finalContainers = elements(byCssSelector("li.styles__substation___1JooU"));
             for (SelenideElement container : finalContainers) {
                 String[] itemInfo = container.find(byClassName("styles__substation__info___31rGu")).text().split(" \\| ");
                 String itemValue;
@@ -433,22 +397,36 @@ public class Page {
                         break;
                     case "Класс напряжения":
                         itemValue = container.find(byCssSelector("span.styles__substation__voltage___GmCRg")).text();
-//                    itemValue = voltageInfo[0];
                         break;
                     default:
                         throw new IllegalStateException("Unexpected value: " + filterName);
                 }
-                if (!itemValue.equals(filterItem)) {
-                    finalNumberItemsFromWeb++;
+                if (contains(filterItems, itemValue)){
+                    flag = false;
+                    break;
                 }
+
             }
         }
-        assertThat(finalNumberItemsFromWeb, equalTo(finalNumberItemsFromDb));
-        System.out.println(finalNumberItemsFromWeb + "  " + finalNumberItemsFromDb);
+        assertTrue(flag);
+        if (finalNumberItemsFromDb == 0){
+            assertNull(finalContainers);
+        } else {
+            assertThat(finalContainers.size(), equalTo(finalNumberItemsFromDb));
+        }
         assertThat(finalNumberItemsFromDb, equalTo(Integer.parseInt(element(withText(filterName))
                 .parent().parent().find(byCssSelector("span.styles__checkbox-list__count___2UoT9 span")).text())));
         if (finalNumberItemsFromDb == 0) {
             assertThat(colorToHex(element(withText(filterName)).parent().parent().find(byCssSelector("span.styles__checkbox-list__count___2UoT9 span"))), equalTo("#ff3434"));
         }
+    }
+
+    public Boolean contains(String[] filterItems, String itemValue) {
+        for (String filterItem : filterItems) {
+            if (itemValue.equals(filterItem)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

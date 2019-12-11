@@ -1,10 +1,14 @@
 package ru.rtsoft.qa.asmrza.widgets;
 
 import com.codeborne.selenide.ElementsCollection;
+import com.codeborne.selenide.Selenide;
 import com.codeborne.selenide.SelenideElement;
 
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
 
 import static com.codeborne.selenide.Condition.*;
 import static com.codeborne.selenide.Selectors.*;
@@ -182,7 +186,47 @@ public class MainPage extends Page{
     public MainPage objectsNameCheck() throws SQLException {
         new Database().connect();
         element(byCssSelector("li.styles__substation___1JooU")).shouldBe(visible);
-        
+
         return this;
+    }
+
+
+    public void open() {
+        Selenide.open("/");
+    }
+
+    public MainPage logout() {
+        element(byClassName("styles__submenu__exit___1VaJe")).click();
+        return this;
+    }
+
+    public MainPage correctLoginCheck() {
+        element(byClassName("styles__main__title___if37D")).shouldBe(visible).shouldBe(text("Наблюдаемые объекты"));
+        return this;
+    }
+
+    public SelenideElement loginButton() {
+        return element(byText("Войти в систему"));
+    }
+
+    public void enterData(String name, String pass) {
+        $(byName("username")).setValue(name);
+        $(byName("password")).setValue(pass);
+    }
+
+    public void checkTracingObjectsAttributes() {
+        element(byCssSelector("li.styles__substation___1JooU")).shouldBe(visible);
+        ElementsCollection containers = elements(byCssSelector("li.styles__substation___1JooU"));
+        for (SelenideElement container : containers) {
+            if (container.find(byCssSelector(".styles__substation___1JooU span.styles__substation__adjacent-icon___2U8jP")).exists()) {
+                continue;
+            } else {
+                container.find(byClassName("styles__substation__fault-icon___2dvY5")).shouldBe(visible);
+                container.find(byClassName("styles__substation__events-count-date___1Ayf0")).shouldBe(visible);
+                container.find(byClassName("styles__substation__events-count___Sn81X")).shouldBe(visible);
+                container.find(byCssSelector("[class*=malfunctions-icon]")).shouldBe(visible);
+                container.find(byCssSelector("[class*=malfunctions-text]")).shouldBe(visible);
+            }
+        }
     }
 }

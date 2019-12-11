@@ -4,6 +4,7 @@ import com.codeborne.selenide.SelenideElement;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import ru.rtsoft.qa.asmrza.testconfigs.BaseTest;
+import ru.rtsoft.qa.asmrza.widgets.LoginPage;
 import ru.rtsoft.qa.asmrza.widgets.Page;
 
 import static com.codeborne.selenide.Selectors.byClassName;
@@ -14,10 +15,10 @@ public class TestWeb extends BaseTest {
 
     @BeforeClass()
     public static void loginAsAdmin() {
-        Page loginPage = new Page();
+        LoginPage loginPage = new LoginPage();
         loginPage.open();
         loginPage.enterData("admin", "qwerty123");
-        SelenideElement loginButton = loginPage.getSelenideElement();
+        SelenideElement loginButton = loginPage.loginButton();
         loginButton.click();
         loginPage.correctLoginCheck();
     }

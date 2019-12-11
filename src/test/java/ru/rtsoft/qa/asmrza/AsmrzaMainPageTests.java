@@ -1,13 +1,9 @@
 package ru.rtsoft.qa.asmrza;
 
-import com.codeborne.selenide.SelenideElement;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import ru.rtsoft.qa.asmrza.testconfigs.BaseTest;
-import ru.rtsoft.qa.asmrza.widgets.Database;
-import ru.rtsoft.qa.asmrza.widgets.Filter;
-import ru.rtsoft.qa.asmrza.widgets.MainPage;
-import ru.rtsoft.qa.asmrza.widgets.Page;
+import ru.rtsoft.qa.asmrza.widgets.*;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -20,12 +16,11 @@ public class AsmrzaMainPageTests extends BaseTest {
 
     @BeforeClass()
     public static void loginAsAdmin() {
-        Page loginPage = new Page();
-        loginPage.open();
-        loginPage.enterData("admin", "qwerty123");
-        SelenideElement loginButton = loginPage.getSelenideElement();
-        loginButton.click();
-        loginPage.correctLoginCheck();
+        new LoginPage()
+                .open()
+                .enterData("admin", "qwerty123")
+                .loginButton().click();
+        new MainPage().correctLoginCheck();
     }
 
 

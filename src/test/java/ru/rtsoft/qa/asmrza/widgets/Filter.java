@@ -9,7 +9,7 @@ import static com.codeborne.selenide.Selenide.element;
 
 public class Filter {
 
-    public void openDropDownMenuFor(String filterName) {
+    public Filter openDropDownMenuFor(String filterName) {
         SelenideElement filterBar = element(byCssSelector("[class^=styles__filter-list]")).shouldBe(visible);
         SelenideElement dropDownMenu = filterBar.findAll(byClassName("styles__text___1Qlyb")).findBy(text(filterName));
         dropDownMenu.click();
@@ -24,10 +24,11 @@ public class Filter {
 //                .collect(Collectors.toList());
 //        System.out.println(content);
 //        sleep(5000);
+        return this;
     }
 
 
-    public void filteringBy(String filterName, String[] filterItems) {
+    public Filter filteringBy(String filterName, String[] filterItems) {
         for (String filterItem: filterItems) {
             SelenideElement filterBar = element(byCssSelector("[class^=styles__filter-list]")).shouldBe(visible);
             SelenideElement dropDownMenu = filterBar.findAll(byClassName("styles__text___1Qlyb")).findBy(text(filterName));
@@ -38,14 +39,16 @@ public class Filter {
             SelenideElement dropDownMenuItem = dropDownList.find(byText(filterItem)).parent().find(byCssSelector("span.styles__checkbox__container___3smLo"));
             dropDownMenuItem.click();
         }
+        return this;
     }
 
-    public void dropFilters() {
+    public Filter dropFilters() {
         SelenideElement filterBar = element(byCssSelector("div[class^=styles__filter-list]")).shouldBe(visible);
 //        SelenideElement dropFilterButton = filterBar.find(byCssSelector("button.styles__button___Fbunz styles__button_s___240cs styles__button__transparent___2euQU styles__filter-list__btn___15lOn"));
         SelenideElement dropFilterButton = filterBar.find(byCssSelector("button[type=button]"));
         if (dropFilterButton.isDisplayed()){
             dropFilterButton.click();
         }
+        return this;
     }
 }

@@ -6,6 +6,7 @@ import org.junit.Test;
 import ru.rtsoft.qa.asmrza.testconfigs.BaseTest;
 import ru.rtsoft.qa.asmrza.widgets.Database;
 import ru.rtsoft.qa.asmrza.widgets.Filter;
+import ru.rtsoft.qa.asmrza.widgets.MainPage;
 import ru.rtsoft.qa.asmrza.widgets.Page;
 
 import java.sql.SQLException;
@@ -33,7 +34,7 @@ public class AsmrzaMainPageTests extends BaseTest {
         Database database = new Database();
         database.connect();
         int itemsFromDb = database.getNumberOfItems("select * from asm_substation");
-        Page mainPage = new Page();
+        MainPage mainPage = new MainPage();
         int itemsFromWeb = mainPage.getNumberOfEnergoObjects();
         assertThat(itemsFromDb, equalTo(itemsFromWeb));
     }
@@ -43,7 +44,7 @@ public class AsmrzaMainPageTests extends BaseTest {
         Database database = new Database();
         database.connect();
         int itemsFromDb = database.getNumberOfItems("select * from asm_fault");
-        Page mainPage = new Page();
+        MainPage mainPage = new MainPage();
         int itemsFromWeb = mainPage.getNumberOfFaults();
         assertThat(itemsFromDb, equalTo(itemsFromWeb));
     }
@@ -53,7 +54,7 @@ public class AsmrzaMainPageTests extends BaseTest {
         Database database = new Database();
         database.connect();
         int itemsFormDb = database.getNumberOfItems("select * from asm_substation where in_service = true");
-        Page mainPage = new Page();
+        MainPage mainPage = new MainPage();
         int itemsFromWeb = mainPage.getNumberOfTracingObjects();
         mainPage.checkTracingObjectsAttributes();
         assertThat(itemsFormDb, equalTo(itemsFromWeb));
@@ -64,7 +65,7 @@ public class AsmrzaMainPageTests extends BaseTest {
         Database database = new Database();
         database.connect();
         List<String> itemsFromDb = database.getNameOfObjects("select name from asm_substation where in_service = true");
-        Page mainPage = new Page();
+        MainPage mainPage = new MainPage();
         List<String> itemsFromWeb = mainPage.getNameOfObjects();
         assertThat(itemsFromDb, equalTo(itemsFromWeb));
     }
@@ -74,7 +75,7 @@ public class AsmrzaMainPageTests extends BaseTest {
         Database database = new Database();
         database.connect();
         int itemsFromDb = database.getNumberOfItems("select * from asm_substation where in_service = false");
-        Page mainPage = new Page();
+        MainPage mainPage = new MainPage();
         int itemsFromWeb = mainPage.getNumberOfNonTracingObjects();
         mainPage.checkNonTracingObjectsAttributes();
         assertThat(itemsFromDb, equalTo(itemsFromWeb));
@@ -82,31 +83,29 @@ public class AsmrzaMainPageTests extends BaseTest {
 
     @Test
     public void objectsButtonCheck() {
-        Page mainPage = new Page();
-        mainPage.checkGotoButtonPresence();
+        new MainPage().checkGotoButtonPresence();
     }
 
     @Test
     public void commonLinksTest() {
-        Page mainPage = new Page();
-        mainPage.checkArchiveLink();
-        mainPage.checkJournalLink();
-        mainPage.checkUserLink();
-        mainPage.exitLink();
+        new MainPage()
+                .checkArchiveLink()
+                .checkJournalLink()
+                .checkUserLink()
+                .exitLink();
         loginAsAdmin();
     }
 
     @Test
     public void rightPanelCheck() {
-        Page mainPage = new Page();
-        mainPage.panelPresenceCheck();
+        new MainPage().panelPresenceCheck();
     }
 
     @Test
     public void filterControlsCheck() throws SQLException {
-        Page mainPage = new Page();
-        mainPage.filterControlsPresenceCheck();
-        mainPage.filterControlsContentCheck();
+        new MainPage()
+                .filterControlsPresenceCheck()
+                .filterControlsContentCheck();
     }
 
     @Test
@@ -116,36 +115,36 @@ public class AsmrzaMainPageTests extends BaseTest {
         String filterName = "Энергосистема";
         String[] filterBy = {"ЭС Юга"};
         mainPage.checkStateBeforeFiltering(filterName, filterBy);
-        filter.openDropDownMenuFor(filterName);
-        filter.filteringBy(filterName, filterBy);
+        filter.openDropDownMenuFor(filterName)
+                .filteringBy(filterName, filterBy);
         mainPage.checkStateAfterFiltering(filterName, filterBy);
         filter.dropFilters();
         filterName = "Диспетчер";
         filterBy = new String[]{"Кубанское РДУ"};
         mainPage.checkStateBeforeFiltering(filterName, filterBy);
-        filter.openDropDownMenuFor(filterName);
-        filter.filteringBy(filterName, filterBy);
+        filter.openDropDownMenuFor(filterName)
+                .filteringBy(filterName, filterBy);
         mainPage.checkStateAfterFiltering(filterName, filterBy);
         filter.dropFilters();
         filterName = "Собственник";
         filterBy = new String[]{"Кубанское ПМЭС", "ОАО «Сочинская ТЭС»"};
         mainPage.checkStateBeforeFiltering(filterName, filterBy);
-        filter.openDropDownMenuFor(filterName);
-        filter.filteringBy(filterName, filterBy);
+        filter.openDropDownMenuFor(filterName)
+                .filteringBy(filterName, filterBy);
         mainPage.checkStateAfterFiltering(filterName, filterBy);
         filter.dropFilters();
         filterName = "Класс напряжения";
         filterBy = new String[]{"220 кВ"};
         mainPage.checkStateBeforeFiltering(filterName, filterBy);
-        filter.openDropDownMenuFor(filterName);
-        filter.filteringBy(filterName, filterBy);
+        filter.openDropDownMenuFor(filterName)
+                .filteringBy(filterName, filterBy);
         mainPage.checkStateAfterFiltering(filterName, filterBy);
         filter.dropFilters();
     }
 
     @Test
-    public void objectCardCheck(){
-        Page mainPage = new Page();
-        
+    public void objectsCardCheck() throws SQLException {
+        new MainPage()
+                .objectsNameCheck();
     }
 }

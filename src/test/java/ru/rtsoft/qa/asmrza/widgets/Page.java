@@ -79,8 +79,8 @@ public class Page {
             default:
                 throw new IllegalStateException("Unexpected value: " + filterName);
         }
-        int initialNumberItemsFromDb = database.getNumberOfItems(sqlQuery);
-        int numberOfNotFilteredItemsFromDb = database.getNumberOfItems(sqlQueryNotFiltered); // для проверки количества объектов в фильтре (Собственник 3 из 3, например)
+        int initialNumberItemsFromDb = database.getNumberOfRows(sqlQuery);
+        int numberOfNotFilteredItemsFromDb = database.getNumberOfRows(sqlQueryNotFiltered); // для проверки количества объектов в фильтре (Собственник 3 из 3, например)
         int initialNumberItemsFromWeb = 0;
         ElementsCollection initialContainers = elements(byCssSelector("li.styles__substation___1JooU"));
         for (SelenideElement container : initialContainers) {
@@ -159,7 +159,7 @@ public class Page {
             default:
                 throw new IllegalStateException("Unexpected value: " + filterName);
         }
-        int finalNumberItemsFromDb = database.getNumberOfItems(sqlQuery);
+        int finalNumberItemsFromDb = database.getNumberOfRows(sqlQuery);
         if (elements(byCssSelector("li.styles__substation___1JooU")).size() == 0 && finalNumberItemsFromDb == 0) {
             SelenideElement emptyList = element(byCssSelector("span.styles__list-empty___1_drg")).shouldBe(visible);
             assertThat(emptyList.text(), equalTo("Нет подстанций соответствующих текущему состоянию фильтра"));
@@ -215,7 +215,7 @@ public class Page {
 
 
     protected void findingAndAssert(Database database, SelenideElement containerElement, String sqlQuery) throws SQLException {
-        ArrayList<String> nameOfElementsFromDb = database.getNameOfObjects(sqlQuery);
+        ArrayList<String> nameOfElementsFromDb = database.getValueOfObjects(sqlQuery);
         nameOfElementsFromDb.sort(Comparator.naturalOrder());
         ArrayList<String> nameOfElementsFromWeb = new ArrayList<>();
         SelenideElement parentElement = containerElement.parent().parent().parent().parent();
@@ -230,7 +230,7 @@ public class Page {
     }
 
     protected void findingUniqueAndAssert(Database database, SelenideElement containerElement, String sqlQuery) throws SQLException {
-        ArrayList<String> s = database.getNameOfObjects(sqlQuery);
+        ArrayList<String> s = database.getValueOfObjects(sqlQuery);
         HashSet<String> ss = new HashSet<>(s);
         ArrayList<String> nameOfElementsFromDb = new ArrayList<>(ss);
         ArrayList<String> nameOfElementsFromWeb = new ArrayList<>();

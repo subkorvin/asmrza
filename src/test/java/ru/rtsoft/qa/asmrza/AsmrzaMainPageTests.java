@@ -28,7 +28,7 @@ public class AsmrzaMainPageTests extends BaseTest {
     public void energoObjectsPresentCheck() throws SQLException {
         Database database = new Database();
         database.connect();
-        int itemsFromDb = database.getNumberOfItems("select * from asm_substation");
+        int itemsFromDb = database.getNumberOfRows("select * from asm_substation");
         MainPage mainPage = new MainPage();
         int itemsFromWeb = mainPage.getNumberOfEnergoObjects();
         assertThat(itemsFromDb, equalTo(itemsFromWeb));
@@ -38,7 +38,7 @@ public class AsmrzaMainPageTests extends BaseTest {
     public void faultPresentCheck() throws SQLException {
         Database database = new Database();
         database.connect();
-        int itemsFromDb = database.getNumberOfItems("select * from asm_fault");
+        int itemsFromDb = database.getNumberOfRows("select * from asm_fault");
         MainPage mainPage = new MainPage();
         int itemsFromWeb = mainPage.getNumberOfFaults();
         assertThat(itemsFromDb, equalTo(itemsFromWeb));
@@ -48,7 +48,7 @@ public class AsmrzaMainPageTests extends BaseTest {
     public void tracingEnegroObjectsCheck() throws SQLException {
         Database database = new Database();
         database.connect();
-        int itemsFormDb = database.getNumberOfItems("select * from asm_substation where in_service = true");
+        int itemsFormDb = database.getNumberOfRows("select * from asm_substation where in_service = true");
         MainPage mainPage = new MainPage();
         int itemsFromWeb = mainPage.getNumberOfTracingObjects();
         mainPage.checkTracingObjectsAttributes();
@@ -59,7 +59,7 @@ public class AsmrzaMainPageTests extends BaseTest {
     public void tracingEnergoObjectsMatching() throws SQLException {
         Database database = new Database();
         database.connect();
-        List<String> itemsFromDb = database.getNameOfObjects("select name from asm_substation where in_service = true");
+        List<String> itemsFromDb = database.getValueOfObjects("select name from asm_substation where in_service = true");
         MainPage mainPage = new MainPage();
         List<String> itemsFromWeb = mainPage.getNameOfObjects();
         assertThat(itemsFromDb, equalTo(itemsFromWeb));
@@ -69,7 +69,7 @@ public class AsmrzaMainPageTests extends BaseTest {
     public void nonTracingEnergoObjectsCheck() throws SQLException {
         Database database = new Database();
         database.connect();
-        int itemsFromDb = database.getNumberOfItems("select * from asm_substation where in_service = false");
+        int itemsFromDb = database.getNumberOfRows("select * from asm_substation where in_service = false");
         MainPage mainPage = new MainPage();
         int itemsFromWeb = mainPage.getNumberOfNonTracingObjects();
         mainPage.checkNonTracingObjectsAttributes();
@@ -138,8 +138,17 @@ public class AsmrzaMainPageTests extends BaseTest {
     }
 
     @Test
-    public void objectsCardCheck() throws SQLException {
-        new MainPage()
-                .objectsNameCheck();
+    public void objectsNameCheck() throws SQLException {
+        new MainPage().objectsNameCheck();
+    }
+
+    @Test
+    public void objectsTypeCheck() throws SQLException {
+        new MainPage().objectTypeCheck();
+    }
+
+    @Test
+    public void objectVoltageClassCheck() throws SQLException {
+        new MainPage().objectVoltageClassCheck();
     }
 }

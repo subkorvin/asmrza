@@ -42,7 +42,7 @@ public class Database {
         }
     }
 
-    public int getNumberOfItems(String sqlQuery) throws SQLException {
+    public int getNumberOfRows(String sqlQuery) throws SQLException {
         Statement st = connection.createStatement();
         ResultSet rs = st.executeQuery(sqlQuery);
 
@@ -68,7 +68,7 @@ public class Database {
         connection.close();
     }
 
-    public ArrayList<String> getNameOfObjects(String sqlQuery) throws SQLException {
+    public ArrayList<String> getValueOfObjects(String sqlQuery) throws SQLException {
         Statement st = connection.createStatement();
         ResultSet rs = st.executeQuery(sqlQuery);
         ArrayList<String> items = new ArrayList<String>();

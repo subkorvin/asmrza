@@ -17,10 +17,6 @@ public class LoginPage extends Page{
         return this;
     }
 
-    public LoginPage logout() {
-        element(byClassName("styles__submenu__exit___1VaJe")).click();
-        return this;
-    }
 
     public LoginPage correctLoginCheck() {
         element(byClassName("styles__main__title___if37D")).shouldBe(visible).shouldBe(text("Наблюдаемые объекты"));

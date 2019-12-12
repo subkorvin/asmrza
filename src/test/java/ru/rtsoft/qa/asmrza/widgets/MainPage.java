@@ -1,7 +1,6 @@
 package ru.rtsoft.qa.asmrza.widgets;
 
 import com.codeborne.selenide.ElementsCollection;
-import com.codeborne.selenide.Selenide;
 import com.codeborne.selenide.SelenideElement;
 
 import java.sql.SQLException;
@@ -14,12 +13,9 @@ import static com.codeborne.selenide.Condition.*;
 import static com.codeborne.selenide.Selectors.*;
 import static com.codeborne.selenide.Selenide.*;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.*;
 
-public class MainPage extends Page{
-
-
-
+public class MainPage extends Page {
 
 
     public int getNumberOfEnergoObjects() {
@@ -183,18 +179,6 @@ public class MainPage extends Page{
         return this;
     }
 
-    public MainPage objectsNameCheck() throws SQLException {
-        new Database().connect();
-        element(byCssSelector("li.styles__substation___1JooU")).shouldBe(visible);
-
-        return this;
-    }
-
-
-    public void open() {
-        Selenide.open("/");
-    }
-
     public MainPage logout() {
         element(byClassName("styles__submenu__exit___1VaJe")).click();
         return this;
@@ -205,28 +189,88 @@ public class MainPage extends Page{
         return this;
     }
 
-    public SelenideElement loginButton() {
-        return element(byText("Войти в систему"));
-    }
 
-    public void enterData(String name, String pass) {
-        $(byName("username")).setValue(name);
-        $(byName("password")).setValue(pass);
-    }
-
-    public void checkTracingObjectsAttributes() {
+    public void checkTracingObjectsAttributes() throws SQLException {
+        Database database = new Database();
+        database.connect();
         element(byCssSelector("li.styles__substation___1JooU")).shouldBe(visible);
+        String sqlBody = "from asm_substation left join asm_panel on asm_substation.id = asm_panel.substation_id " +
+                "left join asm_protection_device on asm_panel.id = asm_protection_device.panel_id " +
+                "left join asm_malfunction_history on asm_protection_device.id = asm_malfunction_history.device_id " +
+                "where asm_malfunction_history.malfunction_end is null and asm_malfunction_history.malfunction_start is not null";
+        int rowsNumber = database.getNumberOfRows("select distinct asm_substation.name " + sqlBody);
+        ArrayList<String> rowsValue = database.getValueOfObjects("select distinct asm_substation.name " + sqlBody);
         ElementsCollection containers = elements(byCssSelector("li.styles__substation___1JooU"));
         for (SelenideElement container : containers) {
-            if (container.find(byCssSelector(".styles__substation___1JooU span.styles__substation__adjacent-icon___2U8jP")).exists()) {
-                continue;
-            } else {
+            String stationName = container.find(byClassName("styles__substation__name___1qVW9")).text();
+            if (!container.find(byCssSelector(".styles__substation___1JooU span.styles__substation__adjacent-icon___2U8jP")).exists()) // ненаблюдаемый объект
+            {
                 container.find(byClassName("styles__substation__fault-icon___2dvY5")).shouldBe(visible);
                 container.find(byClassName("styles__substation__events-count-date___1Ayf0")).shouldBe(visible);
                 container.find(byClassName("styles__substation__events-count___Sn81X")).shouldBe(visible);
-                container.find(byCssSelector("[class*=malfunctions-icon]")).shouldBe(visible);
-                container.find(byCssSelector("[class*=malfunctions-text]")).shouldBe(visible);
+                for (String value : rowsValue) {
+                    if (rowsNumber > 0 && value.equals(stationName)) {
+                        container.find(byCssSelector("span[class*=substation__triangle-icon_red]")).shouldBe(visible);
+                        String malfanctionNumberFromDb = String.valueOf(database.getNumberOfRows("select asm_malfunction_history.id " + sqlBody + " and asm_substation.name = " + "'" + stationName + "'"));
+                        String malfanctionNumberFromWeb = container.find(byCssSelector("[class*=substation__redirect-relay]")).text().split(" ")[0];
+                        assertThat(malfanctionNumberFromDb, equalTo(malfanctionNumberFromWeb));
+                    } else {
+                        container.find(byCssSelector("[class*=malfunctions-icon]")).shouldBe(visible);
+                        container.find(byCssSelector("[class*=malfunctions-text]")).shouldBe(visible);
+                    }
+                }
             }
+        }
+    }
+
+    public void objectsNameCheck() throws SQLException {
+        Database database = new Database();
+        database.connect();
+        element(byCssSelector("li.styles__substation___1JooU")).shouldBe(visible);
+        ElementsCollection containers = elements(byCssSelector("li.styles__substation___1JooU"));
+        ArrayList<String> namesFromWeb = new ArrayList<>();
+        ArrayList<String> namesFromDb = database.getValueOfObjects("select name from asm_substation");
+        for (SelenideElement container : containers) {
+            String stationNameFromWeb = container.find(byClassName("styles__substation__name___1qVW9")).shouldBe(visible).text();
+            namesFromWeb.add(stationNameFromWeb);
+        }
+        namesFromWeb.sort(Comparator.naturalOrder());
+        namesFromDb.sort(Comparator.naturalOrder());
+        assertEquals(namesFromDb, namesFromWeb);
+    }
+
+    public void objectTypeCheck() throws SQLException {
+        Database database = new Database();
+        database.connect();
+        element(byCssSelector("li.styles__substation___1JooU")).shouldBe(visible);
+        ElementsCollection containers = elements(byCssSelector("li.styles__substation___1JooU"));
+        for (SelenideElement container : containers) {
+            String objectName = container.find(byClassName("styles__substation__name___1qVW9")).text();
+            String objectTypeFromWeb = container.find(byCssSelector("span.styles__substation__type___2GrAD")).text();
+            String objectNameFromDb = database.getValueOfObjects("select type from asm_substation where name = " + "'" + objectName + "'").get(0);
+            switch (objectNameFromDb) {
+                case "1":
+                    assertEquals("Подстанция", objectTypeFromWeb);
+                    break;
+                case "2":
+                    assertEquals("Станция", objectTypeFromWeb);
+            }
+        }
+    }
+
+    public void objectVoltageClassCheck() throws SQLException {
+        Database database = new Database();
+        database.connect();
+        element(byCssSelector("li.styles__substation___1JooU")).shouldBe(visible);
+        ElementsCollection containers = elements(byCssSelector("li.styles__substation___1JooU"));
+        for (SelenideElement container : containers) {
+            String objectName = container.find(byClassName("styles__substation__name___1qVW9")).text();
+            String objectVoltageClassFromWeb = String.valueOf((int)(Double.parseDouble(container.find(byCssSelector("span.styles__substation__voltage___GmCRg")).text().split(" ")[0]) * 1000));
+            String objectVoltageClassFromDb = database.getValueOfObjects("select max (asm_base_voltage.nominal) from asm_substation " +
+                    "left join asm_switchgear on asm_substation.id = asm_switchgear.substation_id " +
+                    "left join asm_base_voltage on asm_switchgear.base_voltage_id = asm_base_voltage.id " +
+                    "where asm_substation.name = " + "'" + objectName + "'").get(0);
+            assertThat(objectVoltageClassFromDb, equalTo(objectVoltageClassFromWeb));
         }
     }
 }

@@ -151,4 +151,14 @@ public class AsmrzaMainPageTests extends BaseTest {
     public void objectVoltageClassCheck() throws SQLException {
         new MainPage().objectVoltageClassCheck();
     }
+
+    @Test
+    public void objectHierarchyCheck() throws SQLException {
+        new MainPage().objectHierarchyCheck();
+    }
+
+    @Test
+    public void lastFaultDateTimeCheck(){
+        new MainPage().lastFaultTime();
+    }
 }

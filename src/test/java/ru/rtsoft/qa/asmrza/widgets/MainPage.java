@@ -4,10 +4,7 @@ import com.codeborne.selenide.ElementsCollection;
 import com.codeborne.selenide.SelenideElement;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 import static com.codeborne.selenide.Condition.*;
 import static com.codeborne.selenide.Selectors.*;
@@ -272,5 +269,29 @@ public class MainPage extends Page {
                     "where asm_substation.name = " + "'" + objectName + "'").get(0);
             assertThat(objectVoltageClassFromDb, equalTo(objectVoltageClassFromWeb));
         }
+    }
+
+    public void objectHierarchyCheck() throws SQLException {
+        Database database = new Database();
+        database.connect();
+        element(byCssSelector("li.styles__substation___1JooU")).shouldBe(visible);
+        ElementsCollection containers = elements(byCssSelector("li.styles__substation___1JooU"));
+        for (SelenideElement container : containers) {
+            ArrayList<String> hierarchyFromWeb = new ArrayList<>();
+            String objectName = container.find(byClassName("styles__substation__name___1qVW9")).text();
+            String[] hierarchy = container.find(byClassName("styles__substation__info___31rGu")).text().split(" \\| ");
+            Collections.addAll(hierarchyFromWeb, hierarchy);
+            hierarchyFromWeb.add(0, objectName);
+            ArrayList<String> hierarchyFromDB = database.getValuesOfObjects("select asm_substation.name, asm_geographical_region.name, t1.name as owner, t2.name as operator from asm_substation " +
+                    "left join asm_geographical_region on asm_substation.geographical_region_id = asm_geographical_region.id " +
+                    "left join asm_company as t1 on asm_substation.operator_id = t1.id " +
+                    "left join asm_company as t2 on asm_substation.owner_id = t2.id " +
+                    "where asm_substation.name = '" + objectName + "'");
+            assertThat(hierarchyFromDB, equalTo(hierarchyFromWeb));
+        }
+    }
+
+    public void lastFaultTime() {
+
     }
 }

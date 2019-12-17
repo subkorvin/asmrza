@@ -32,34 +32,26 @@
   </component>
   <component name="DBNavigator.Project.DatabaseConsoleManager">
     <connection id="98d23dc6-9321-4c01-9a08-bb68dd226f3b">
-      <console name="Connection" type="STANDARD" schema="public" session="Main"><![CDATA[select * from asm_substation
-select * from asm_malfunction_history
-select * from asm_protection_device
+      <console name="Connection" type="STANDARD" schema="public" session="Main"><![CDATA[select * from asm_fault
 select * from asm_power_equipment
-select * from asm_panel
+select * from asm_pf_object_mapper
+select * from asm_stage
+select * from asm_substation
+select * from asm_substation_line_segment_equivalent
+select * from asm_breaker_equipment_list
+select * from asm_breaker
+select * from asm_power_equipment
+select * from asm_fault_devices
+select * from asm_protection_device
+select * from asm_substation_line_segment_equivalent
+select * from asm_line
 
-select distinct asm_substation.name from asm_substation
-left join asm_panel on asm_substation.id = asm_panel.substation_id
-left join asm_protection_device on asm_panel.id = asm_protection_device.panel_id
-left join asm_malfunction_history on asm_protection_device.id = asm_malfunction_history.device_id
-where asm_malfunction_history.malfunction_end is null and asm_malfunction_history.malfunction_start is not null
---group by asm_substation.name 
-
-select asm_malfunction_history.id from asm_substation
-left join asm_panel on asm_substation.id = asm_panel.substation_id
-left join asm_protection_device on asm_panel.id = asm_protection_device.panel_id
-left join asm_malfunction_history on asm_protection_device.id = asm_malfunction_history.device_id
-where asm_malfunction_history.malfunction_end is null and asm_malfunction_history.malfunction_start is not null and asm_substation.name = 'РП 220 кВ Черноморская'
-
-select max (asm_base_voltage.nominal) from asm_substation 
-left join asm_switchgear on asm_substation.id = asm_switchgear.substation_id 
-left join asm_base_voltage on asm_switchgear.base_voltage_id = asm_base_voltage.id 
-where asm_substation.name = 'РП 220 кВ Черноморская'
---group by asm_substation.name
-
-select asm_base_voltage.nominal, asm_substation."name" from asm_substation 
-left join asm_switchgear on asm_substation.id = asm_switchgear.substation_id 
-left join asm_base_voltage on asm_switchgear.base_voltage_id = asm_base_voltage.id]]></console>
+select max (asm_fault.start_time) from asm_substation
+left join asm_substation_line_segment_equivalent on asm_substation_line_segment_equivalent.substation_id = asm_substation."id"
+left join asm_line on asm_substation_line_segment_equivalent.line_id = asm_line."id"
+left join asm_fault on asm_fault.equipment_id = asm_line.power_equipment_id
+where asm_substation."name" = 'Адлерская ТЭС (С1)'
+group by asm_substation."name"]]></console>
     </connection>
   </component>
   <component name="DBNavigator.Project.DatabaseFileManager">

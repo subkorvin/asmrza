@@ -80,4 +80,19 @@ public class Database {
         items.sort(Comparator.naturalOrder());
         return items;
     }
+
+    public ArrayList<String> getValuesOfObjects(String sqlQuery) throws SQLException {
+        Statement st = connection.createStatement();
+        ResultSet rs = st.executeQuery(sqlQuery);
+        ResultSetMetaData rsmd = rs.getMetaData();
+        int columnsNumber = rsmd.getColumnCount();
+        ArrayList<String> items = new ArrayList<>();
+        while (rs.next()) {
+            for (int i = 1; i <= columnsNumber; i++) {
+                String columnValue = rs.getString(i);
+                items.add(columnValue);
+            }
+        }
+        return items;
+    }
 }

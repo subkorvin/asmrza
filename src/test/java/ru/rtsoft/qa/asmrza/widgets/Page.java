@@ -165,6 +165,7 @@ public class Page {
             assertThat(emptyList.text(), equalTo("Нет подстанций соответствующих текущему состоянию фильтра"));
         } else {
             finalContainers = elements(byCssSelector("li.styles__substation___1JooU"));
+            element(byCssSelector("li.styles__substation___1JooU")).shouldBe(visible);
             for (SelenideElement container : finalContainers) {
                 String[] itemInfo = container.find(byClassName("styles__substation__info___31rGu")).text().split(" \\| ");
                 String itemValue;

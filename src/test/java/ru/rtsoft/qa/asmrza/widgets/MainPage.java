@@ -4,6 +4,8 @@ import com.codeborne.selenide.ElementsCollection;
 import com.codeborne.selenide.SelenideElement;
 
 import java.sql.SQLException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 import static com.codeborne.selenide.Condition.*;
@@ -15,8 +17,12 @@ import static org.junit.Assert.*;
 public class MainPage extends Page {
 
 
+    private final ElementsCollection containers = elements(byCssSelector("li.styles__substation___1JooU"));
+    private final SelenideElement filterContainer = element(byCssSelector("[class^=styles__filter-list]"));
+    private final SelenideElement anyContainer = element(byCssSelector("li.styles__substation___1JooU"));
+
     public int getNumberOfEnergoObjects() {
-        element(byCssSelector("li.styles__substation___1JooU")).shouldBe(visible);
+        anyContainer.shouldBe(visible);
         int s = elements(byClassName("styles__substation__body___26JUD")).size();
         return s;
     }
@@ -28,13 +34,13 @@ public class MainPage extends Page {
     }
 
     public int getNumberOfTracingObjects() {
-        element(byCssSelector("li.styles__substation___1JooU")).shouldBe(visible);
+        anyContainer.shouldBe(visible);
         int s = elements(byCssSelector("li[class^=styles__navigation__item___2PZLM]")).size();
         return s;
     }
 
     public ArrayList<String> getNameOfObjects() {
-        element(byCssSelector("li.styles__substation___1JooU")).shouldBe(visible);
+        anyContainer.shouldBe(visible);
         ArrayList<String> name = new ArrayList<String>();
         ElementsCollection items = elements(byCssSelector("li[class^=styles__navigation__item___2PZLM]"));
         for (SelenideElement item : items) {
@@ -45,7 +51,7 @@ public class MainPage extends Page {
     }
 
     public int getNumberOfNonTracingObjects() {
-        element(byCssSelector("li.styles__substation___1JooU")).shouldBe(visible);
+        anyContainer.shouldBe(visible);
         int s = elements(byCssSelector("span.styles__substation__adjacent-text___25NGJ")).size();
         return s;
     }
@@ -57,15 +63,14 @@ public class MainPage extends Page {
     }
 
     public MainPage checkGotoButtonPresence() {
-        element(byCssSelector("li.styles__substation___1JooU")).shouldBe(visible);
-        ElementsCollection containers = elements(byCssSelector("li.styles__substation___1JooU"));
+        anyContainer.shouldBe(visible);
         ArrayList<String> names = new ArrayList<>();
         for (SelenideElement container : containers) {
             String objNameMain = container.find(byClassName("styles__substation__name___1qVW9")).text();
             names.add(objNameMain);
         }
         for (String name : names) {
-            element(byCssSelector("li.styles__substation___1JooU")).shouldBe(visible);
+            anyContainer.shouldBe(visible);
             SelenideElement s = elements(byCssSelector("span.styles__substation__name___1qVW9")).findBy(text(name)).parent().parent().parent();
             SelenideElement button = s.find(withText("Перейти к объекту"));
             button.click();
@@ -128,15 +133,15 @@ public class MainPage extends Page {
     }
 
     public MainPage filterControlsPresenceCheck() {
-        SelenideElement container = element(byCssSelector("[class^=styles__filter-list]")).shouldBe(visible);
+        filterContainer.shouldBe(visible);
         List<String> filtersExpected = Arrays.asList("Энергосистема", "Диспетчер", "Собственник", "Класс напряжения", "Смежные объекты");
         ArrayList<String> filtersActual = new ArrayList<>();
-        ElementsCollection elements = container.findAll(byClassName("styles__text___1Qlyb"));
+        ElementsCollection elements = filterContainer.findAll(byClassName("styles__text___1Qlyb"));
         for (SelenideElement element : elements) {
             filtersActual.add(element.text());
         }
         assertThat(filtersActual, equalTo(filtersExpected));
-        ElementsCollection filtersCheckbox = container.findAll(byCssSelector("div.styles__checkbox-list__title___gtUmD"));
+        ElementsCollection filtersCheckbox = filterContainer.findAll(byCssSelector("div.styles__checkbox-list__title___gtUmD"));
         for (SelenideElement checkbox : filtersCheckbox) {
             checkbox.click();
             SelenideElement s = checkbox.parent().parent();
@@ -149,8 +154,8 @@ public class MainPage extends Page {
     public MainPage filterControlsContentCheck() throws SQLException {
         Database database = new Database();
         database.connect();
-        SelenideElement container = element(byCssSelector("[class^=styles__filter-list]")).shouldBe(visible);
-        ElementsCollection containerElements = container.findAll(byClassName("styles__text___1Qlyb"));
+        filterContainer.shouldBe(visible);
+        ElementsCollection containerElements = filterContainer.findAll(byClassName("styles__text___1Qlyb"));
         String sqlQuery;
         for (SelenideElement containerElement : containerElements) {
             switch (containerElement.text()) {
@@ -190,14 +195,13 @@ public class MainPage extends Page {
     public void checkTracingObjectsAttributes() throws SQLException {
         Database database = new Database();
         database.connect();
-        element(byCssSelector("li.styles__substation___1JooU")).shouldBe(visible);
+        anyContainer.shouldBe(visible);
         String sqlBody = "from asm_substation left join asm_panel on asm_substation.id = asm_panel.substation_id " +
                 "left join asm_protection_device on asm_panel.id = asm_protection_device.panel_id " +
                 "left join asm_malfunction_history on asm_protection_device.id = asm_malfunction_history.device_id " +
                 "where asm_malfunction_history.malfunction_end is null and asm_malfunction_history.malfunction_start is not null";
         int rowsNumber = database.getNumberOfRows("select distinct asm_substation.name " + sqlBody);
         ArrayList<String> rowsValue = database.getValueOfObjects("select distinct asm_substation.name " + sqlBody);
-        ElementsCollection containers = elements(byCssSelector("li.styles__substation___1JooU"));
         for (SelenideElement container : containers) {
             String stationName = container.find(byClassName("styles__substation__name___1qVW9")).text();
             if (!container.find(byCssSelector(".styles__substation___1JooU span.styles__substation__adjacent-icon___2U8jP")).exists()) // ненаблюдаемый объект
@@ -223,8 +227,7 @@ public class MainPage extends Page {
     public void objectsNameCheck() throws SQLException {
         Database database = new Database();
         database.connect();
-        element(byCssSelector("li.styles__substation___1JooU")).shouldBe(visible);
-        ElementsCollection containers = elements(byCssSelector("li.styles__substation___1JooU"));
+        anyContainer.shouldBe(visible);
         ArrayList<String> namesFromWeb = new ArrayList<>();
         ArrayList<String> namesFromDb = database.getValueOfObjects("select name from asm_substation");
         for (SelenideElement container : containers) {
@@ -239,8 +242,7 @@ public class MainPage extends Page {
     public void objectTypeCheck() throws SQLException {
         Database database = new Database();
         database.connect();
-        element(byCssSelector("li.styles__substation___1JooU")).shouldBe(visible);
-        ElementsCollection containers = elements(byCssSelector("li.styles__substation___1JooU"));
+        anyContainer.shouldBe(visible);
         for (SelenideElement container : containers) {
             String objectName = container.find(byClassName("styles__substation__name___1qVW9")).text();
             String objectTypeFromWeb = container.find(byCssSelector("span.styles__substation__type___2GrAD")).text();
@@ -258,11 +260,10 @@ public class MainPage extends Page {
     public void objectVoltageClassCheck() throws SQLException {
         Database database = new Database();
         database.connect();
-        element(byCssSelector("li.styles__substation___1JooU")).shouldBe(visible);
-        ElementsCollection containers = elements(byCssSelector("li.styles__substation___1JooU"));
+        anyContainer.shouldBe(visible);
         for (SelenideElement container : containers) {
             String objectName = container.find(byClassName("styles__substation__name___1qVW9")).text();
-            String objectVoltageClassFromWeb = String.valueOf((int)(Double.parseDouble(container.find(byCssSelector("span.styles__substation__voltage___GmCRg")).text().split(" ")[0]) * 1000));
+            String objectVoltageClassFromWeb = String.valueOf((int) (Double.parseDouble(container.find(byCssSelector("span.styles__substation__voltage___GmCRg")).text().split(" ")[0]) * 1000));
             String objectVoltageClassFromDb = database.getValueOfObjects("select max (asm_base_voltage.nominal) from asm_substation " +
                     "left join asm_switchgear on asm_substation.id = asm_switchgear.substation_id " +
                     "left join asm_base_voltage on asm_switchgear.base_voltage_id = asm_base_voltage.id " +
@@ -274,8 +275,7 @@ public class MainPage extends Page {
     public void objectHierarchyCheck() throws SQLException {
         Database database = new Database();
         database.connect();
-        element(byCssSelector("li.styles__substation___1JooU")).shouldBe(visible);
-        ElementsCollection containers = elements(byCssSelector("li.styles__substation___1JooU"));
+        anyContainer.shouldBe(visible);
         for (SelenideElement container : containers) {
             ArrayList<String> hierarchyFromWeb = new ArrayList<>();
             String objectName = container.find(byClassName("styles__substation__name___1qVW9")).text();
@@ -291,7 +291,40 @@ public class MainPage extends Page {
         }
     }
 
-    public void lastFaultTime() {
+    public MainPage lastFaultDateTimeForSubstation(String stationName) throws SQLException {
+        Database database = new Database();
+        database.connect();
+        element(byCssSelector("li.styles__substation___1JooU")).shouldBe(visible);
+        SelenideElement station = containers.findBy(text(stationName));
+        String lastFaultDateFromWeb = station.find(byCssSelector("span.styles__substation__events-count-date___1Ayf0")).text().split(", ")[0];
+        String lastFaultTimeFromWeb = station.find(byCssSelector("span.styles__substation__events-count-date___1Ayf0")).text().split(", ")[1];
+        String lastFaultDateFromDb = LocalDate.parse((database.getValueOfObjects("select max (asm_fault.start_time) from asm_substation " +
+                "left join asm_substation_line_segment_equivalent on asm_substation_line_segment_equivalent.substation_id = asm_substation.id " +
+                "left join asm_line on asm_substation_line_segment_equivalent.line_id = asm_line.id " +
+                "left join asm_fault on asm_fault.equipment_id = asm_line.power_equipment_id " +
+                "where asm_substation.name = '" + stationName + "'" +
+                "group by asm_substation.name").get(0).split(" ")[0]), DateTimeFormatter.ofPattern("yyyy-MM-dd")).format(DateTimeFormatter.ofPattern("dd.MM.yyyy"));
+        String t = database.getValueOfObjects("select max (asm_fault.start_time) from asm_substation " +
+                "left join asm_substation_line_segment_equivalent on asm_substation_line_segment_equivalent.substation_id = asm_substation.id " +
+                "left join asm_line on asm_substation_line_segment_equivalent.line_id = asm_line.id " +
+                "left join asm_fault on asm_fault.equipment_id = asm_line.power_equipment_id " +
+                "where asm_substation.name = '" + stationName + "'" +
+                "group by asm_substation.name").get(0).split(" ")[1];
+        String[] split = t.substring(0, t.indexOf("+")).split(":");
+        String lastFaultTimeFromDb = (Integer.parseInt(split[0]) + 3) + ":" + split[1] + ":" + split[2];
+        String lastFaultDateTimeFromWeb = lastFaultDateFromWeb + " " + lastFaultTimeFromWeb;
+        String lastFaultDateTimeFromDb = lastFaultDateFromDb + " " + lastFaultTimeFromDb;
+        assertEquals(lastFaultDateTimeFromDb, lastFaultDateTimeFromWeb);
+        return this;
+    }
 
+    public StationPage goToObjectPage(String stationName) {
+        StationPage stationPage = new StationPage();
+        anyContainer.shouldBe(visible);
+        SelenideElement container = containers.findBy(text(stationName));
+        container.find(withText("Перейти к объекту")).click();
+        SelenideElement pageHeader = element(byCssSelector("div.styles__header__name-content___3qA1W")).shouldBe(visible);
+        assertThat(pageHeader.text(), equalTo(stationName));
+        return stationPage;
     }
 }

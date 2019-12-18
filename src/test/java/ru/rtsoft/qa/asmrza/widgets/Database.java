@@ -14,7 +14,7 @@ public class Database {
     private Statement st;
 
     public void connect() throws SQLException {
-        System.out.println("Testing connection to PostgreSQL JDBC");
+//        System.out.println("Testing connection to PostgreSQL JDBC");
 
         try {
             Class.forName("org.postgresql.Driver");
@@ -24,7 +24,7 @@ public class Database {
             return;
         }
 
-        System.out.println("PostgreSQL JDBC Driver successfully connected");
+//        System.out.println("PostgreSQL JDBC Driver successfully connected");
 
         try {
             connection = DriverManager.getConnection(DB_URL, USER, PASS);
@@ -36,7 +36,7 @@ public class Database {
         }
 
         if (connection != null) {
-            System.out.println("You successfully connected to database now");
+//            System.out.println("You successfully connected to database now");
         } else {
             System.out.println("Failed to make connection to database");
         }

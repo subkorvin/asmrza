@@ -158,7 +158,9 @@ public class AsmrzaMainPageTests extends BaseTest {
     }
 
     @Test
-    public void lastFaultDateTimeCheck(){
-        new MainPage().lastFaultTime();
+    public void lastFaultDateTimeCheck() throws SQLException {
+        String stationName = "РП 220 кВ Черноморская";
+        StationPage page = new MainPage().lastFaultDateTimeForSubstation(stationName).goToObjectPage(stationName);
+        FaultDialog newFault = page.gotoFaults().newFaultDialogOpen();
     }
 }

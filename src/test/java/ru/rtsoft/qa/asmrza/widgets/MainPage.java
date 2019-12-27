@@ -4,7 +4,9 @@ import com.codeborne.selenide.ElementsCollection;
 import com.codeborne.selenide.SelenideElement;
 
 import java.sql.SQLException;
+import java.text.ParseException;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
@@ -17,7 +19,7 @@ import static org.junit.Assert.*;
 public class MainPage extends Page {
 
 
-    private final ElementsCollection containers = elements(byCssSelector("li.styles__substation___1JooU"));
+    private static final ElementsCollection containers = elements(byCssSelector("li.styles__substation___1JooU"));
     private final SelenideElement filterContainer = element(byCssSelector("[class^=styles__filter-list]"));
     private final SelenideElement anyContainer = element(byCssSelector("li.styles__substation___1JooU"));
 
@@ -291,7 +293,7 @@ public class MainPage extends Page {
         }
     }
 
-    public MainPage lastFaultDateTimeForSubstation(String stationName) throws SQLException {
+    public static String lastFaultDateTimeForSubstation(String stationName) throws SQLException {
         Database database = new Database();
         database.connect();
         element(byCssSelector("li.styles__substation___1JooU")).shouldBe(visible);
@@ -315,7 +317,7 @@ public class MainPage extends Page {
         String lastFaultDateTimeFromWeb = lastFaultDateFromWeb + " " + lastFaultTimeFromWeb;
         String lastFaultDateTimeFromDb = lastFaultDateFromDb + " " + lastFaultTimeFromDb;
         assertEquals(lastFaultDateTimeFromDb, lastFaultDateTimeFromWeb);
-        return this;
+        return lastFaultDateTimeFromWeb;
     }
 
     public StationPage goToObjectPage(String stationName) {
@@ -326,5 +328,16 @@ public class MainPage extends Page {
         SelenideElement pageHeader = element(byCssSelector("div.styles__header__name-content___3qA1W")).shouldBe(visible);
         assertThat(pageHeader.text(), equalTo(stationName));
         return stationPage;
+    }
+
+    public void lastDateTimeComparing(String lastDateTimeBeforeAdding, String stationName) throws ParseException {
+        LocalDate lastDateBefore = LocalDate.parse(lastDateTimeBeforeAdding, DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss.SSS"));
+        LocalTime lastTimeBefore = LocalTime.parse(lastDateTimeBeforeAdding, DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss.SSS"));
+        element(byCssSelector("li.styles__substation___1JooU")).shouldBe(visible);
+        SelenideElement station = containers.findBy(text(stationName));
+        LocalDate lastDateAfter = LocalDate.parse(station.find(byCssSelector("span.styles__substation__events-count-date___1Ayf0")).text(), DateTimeFormatter.ofPattern("dd.MM.yyyy, HH:mm:ss.SSS"));
+        LocalTime lastTimeAfter = LocalTime.parse(station.find(byCssSelector("span.styles__substation__events-count-date___1Ayf0")).text(), DateTimeFormatter.ofPattern("dd.MM.yyyy, HH:mm:ss.SSS"));
+        assertTrue(lastDateBefore.isBefore(lastDateAfter) || lastDateBefore.isEqual(lastDateAfter));
+        assertTrue(lastTimeBefore.isBefore(lastTimeAfter));
     }
 }

@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
 
+import static com.codeborne.selenide.Condition.text;
 import static com.codeborne.selenide.Condition.visible;
 import static com.codeborne.selenide.Selectors.*;
 import static com.codeborne.selenide.Selenide.*;
@@ -243,5 +244,11 @@ public class Page {
         }
         assertThat(nameOfElementsFromDb, equalTo(nameOfElementsFromWeb));
         parentElement.click();
+    }
+
+    public static MainPage goHome() {
+        element(byCssSelector("li.styles__navigation__home___1PQz4")).find(byClassName("styles__link___mSb8f")).click();
+        element(byClassName("styles__main__title___if37D")).shouldBe(visible).shouldBe(text("Наблюдаемые объекты"));
+        return new MainPage();
     }
 }

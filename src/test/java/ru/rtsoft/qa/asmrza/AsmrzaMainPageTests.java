@@ -174,4 +174,10 @@ public class AsmrzaMainPageTests extends BaseTest {
         MainPage mainPage = Page.goHome();
         mainPage.lastDateTimeComparing(lastDateTimeBeforeAdding, stationName);
     }
+
+    @Test
+    public void goToObjectPage() {
+        String stationName = "РП 220 кВ Черноморская";
+        new MainPage().goToObjectPage(stationName);
+    }
 }

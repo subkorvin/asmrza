@@ -333,7 +333,7 @@ public class MainPage extends Page {
     public void lastDateTimeComparing(String lastDateTimeBeforeAdding, String stationName) throws ParseException {
         LocalDate lastDateBefore = LocalDate.parse(lastDateTimeBeforeAdding, DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss.SSS"));
         LocalTime lastTimeBefore = LocalTime.parse(lastDateTimeBeforeAdding, DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss.SSS"));
-        element(byCssSelector("li.styles__substation___1JooU")).shouldBe(visible);
+        anyContainer.shouldBe(visible);
         SelenideElement station = containers.findBy(text(stationName));
         LocalDate lastDateAfter = LocalDate.parse(station.find(byCssSelector("span.styles__substation__events-count-date___1Ayf0")).text(), DateTimeFormatter.ofPattern("dd.MM.yyyy, HH:mm:ss.SSS"));
         LocalTime lastTimeAfter = LocalTime.parse(station.find(byCssSelector("span.styles__substation__events-count-date___1Ayf0")).text(), DateTimeFormatter.ofPattern("dd.MM.yyyy, HH:mm:ss.SSS"));

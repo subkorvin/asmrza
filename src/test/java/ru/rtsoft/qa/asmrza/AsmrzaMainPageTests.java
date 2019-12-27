@@ -180,4 +180,13 @@ public class AsmrzaMainPageTests extends BaseTest {
         String stationName = "РП 220 кВ Черноморская";
         new MainPage().goToObjectPage(stationName);
     }
+
+    @Test
+    public void notificationWindowCheck(){
+        MainPage mainPage = new MainPage();
+        mainPage.checkNotificationWindowPresence()
+        .checkTabsPresence();
+        String startDateTime = mainPage.newFaultMaking()[0];
+        mainPage.checkNewFaultCardPresence(startDateTime);
+    }
 }

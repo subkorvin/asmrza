@@ -10,7 +10,8 @@ import java.awt.datatransfer.StringSelection;
 
 import static com.codeborne.selenide.Condition.text;
 import static com.codeborne.selenide.Selectors.*;
-import static com.codeborne.selenide.Selenide.*;
+import static com.codeborne.selenide.Selenide.element;
+import static com.codeborne.selenide.Selenide.elements;
 import static org.junit.Assert.assertEquals;
 
 
@@ -25,7 +26,7 @@ public class FaultDialog {
         return this;
     }
 
-    public void enterValues(String status, String substation, String switchgear, String equipment, int endTimeShift, String phase, String distance) {
+    public String[] enterValues(String status, String substation, String switchgear, String equipment, int endTimeShift, String phase, String distance) {
         SelenideElement statusField = container.find(byCssSelector("div.styles__select__current___HeCLT"));
         statusField.click();
         container.parent().find(byXpath("./following-sibling::div[@class='styles__options___13xTb']")).find(withText(status)).click();
@@ -35,11 +36,17 @@ public class FaultDialog {
         objectsSelector.find(withText(switchgear)).click();  //выбираем группу присоединений (сгруппированы по уровню напряжений)
         objectsSelector.find(withText(equipment)).click();   //выбираем присоединение
         objectsSelector.findAll(byCssSelector("button")).findBy(text("Применить")).click();   //подтверждаем выбор
-        SelenideElement endTimeElement = container.find(withText("Время окончания"))
-                .parent()
-                .find(byCssSelector("div.react-datepicker-wrapper"))
-                .find(byXpath("./following-sibling::*"));
+        SelenideElement startDateElement = container.find(withText("Время возникновения")).parent().find(byCssSelector("div.react-datepicker__input-container")).find(byCssSelector("input"));
+        String startDate = startDateElement.getAttribute("value");
+        SelenideElement startTimeElement = container.find(withText("Время возникновения")).parent().find(byCssSelector("div.react-datepicker-wrapper")).find(byXpath("./following-sibling::*"));
+        String startTime = startTimeElement.getAttribute("value");
+        SelenideElement endDateElement = container.find(withText("Время окончания")).parent().find(byCssSelector("div.react-datepicker__input-container")).find(byCssSelector("input"));
+        String endDate = endDateElement.getAttribute("value");
+        SelenideElement endTimeElement = container.find(withText("Время окончания")).parent().find(byCssSelector("div.react-datepicker-wrapper")).find(byXpath("./following-sibling::*"));
         String endTime = endTimeElement.getAttribute("value");
+        String startDateTime = startDate + ", " + startTime;
+        String endDateTime = endDate + ", " + endTime;
+        String[] dateTime = {startDateTime, endDateTime};
         String endTimeSec = String.valueOf(Integer.parseInt(endTime.substring(0, endTime.indexOf(".")).split(":")[2]) + endTimeShift);
         String endTimeMsec = endTime.substring(endTime.indexOf(".") + 1);
         endTime = endTime.split(":")[0] + ":" + endTime.split(":")[1] + ":" + endTimeSec + "." + endTimeMsec;
@@ -53,5 +60,6 @@ public class FaultDialog {
         container.parent().find(byXpath("./following-sibling::div[@class='styles__options___13xTb']")).find(withText(phase)).click();
         container.find(withText("ОМП")).find(byXpath("./following-sibling::*")).find(byCssSelector("input")).setValue(distance);
         container.findAll(byCssSelector("button")).findBy(text("Сохранить")).click();
+        return dateTime;
     }
 }

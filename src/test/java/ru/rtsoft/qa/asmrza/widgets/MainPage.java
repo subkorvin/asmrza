@@ -340,4 +340,40 @@ public class MainPage extends Page {
         assertTrue(lastDateBefore.isBefore(lastDateAfter) || lastDateBefore.isEqual(lastDateAfter));
         assertTrue(lastTimeBefore.isBefore(lastTimeAfter));
     }
+
+    public MainPage checkNotificationWindowPresence() {
+        element(byCssSelector("div.styles__main__right___CTlka")).isDisplayed();
+        return this;
+    }
+
+    public MainPage checkTabsPresence() {
+        element(byCssSelector("button[value='faults']")).isDisplayed();
+        element(byCssSelector("button[value='malfunctions']")).isDisplayed();
+        element(byCssSelector("button[value='system']")).isDisplayed();
+        return this;
+    }
+
+    public String[] newFaultMaking() {
+        String stationName = "РП 220 кВ Черноморская";
+        StationPage stationPage = new MainPage().goToObjectPage(stationName);
+        FaultDialog newFault = stationPage.gotoFaults().newFaultDialogOpen();
+        String status = "Расследование";
+        String switchgear = "КРУЭ 220 кВ ПС Черноморская";
+        String equipment = "КВЛ 220 кВ Черноморская - Поселковая 2ц";
+        int endTimeShift = 1;
+        String phase = "AC";
+        String distance = "10.05";
+        newFault.addNewFault();
+        String[] dateTimeCreation = newFault.enterValues(status, stationName, switchgear, equipment, endTimeShift, phase, distance);
+        Page.goHome();
+        return dateTimeCreation;
+    }
+
+    public void checkNewFaultCardPresence(String startDateTime) {
+        SelenideElement firstCard = element(byCssSelector("div.styles__fault___1kqTH"));
+        assertEquals("Новая", firstCard.find(byCssSelector("span.styles__fault__new___18Cxh")).text());
+        assertThat(colorToHex(firstCard.find(byCssSelector("span.styles__fault__new___18Cxh"))), equalTo("#ff3434"));
+        String dateTimeFromCard = firstCard.find(byCssSelector("div.styles__fault__row___3iEyz")).find(byClassName("styles__fault__row-value___1_Ypr")).text();
+        assertEquals(startDateTime, dateTimeFromCard);
+    }
 }

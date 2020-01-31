@@ -8,6 +8,7 @@ public class BaseTest {
     static {
         Configuration.baseUrl = "http://192.168.10.61";
         Configuration.startMaximized = true;
+        Configuration.timeout = 7000;  //миллисекунды
 //        Configuration.screenshots = true;
 //        Configuration.browser = "firefox";
 //        ChromeOptions options = new ChromeOptions();

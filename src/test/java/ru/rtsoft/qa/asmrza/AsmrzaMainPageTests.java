@@ -6,7 +6,6 @@ import ru.rtsoft.qa.asmrza.testconfigs.BaseTest;
 import ru.rtsoft.qa.asmrza.widgets.*;
 
 import java.sql.SQLException;
-import java.text.ParseException;
 import java.util.List;
 
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -159,7 +158,7 @@ public class AsmrzaMainPageTests extends BaseTest {
     }
 
     @Test
-    public void lastFaultDateTimeCheck() throws SQLException, ParseException {
+    public void lastFaultDateTimeCheck() throws SQLException {
         String stationName = "РП 220 кВ Черноморская";
         String lastDateTimeBeforeAdding = MainPage.lastFaultDateTimeForSubstation(stationName);
         StationPage stationPage = new MainPage().goToObjectPage(stationName);
@@ -184,9 +183,15 @@ public class AsmrzaMainPageTests extends BaseTest {
     @Test
     public void notificationWindowCheck(){
         MainPage mainPage = new MainPage();
-        mainPage.checkNotificationWindowPresence()
-        .checkTabsPresence();
+        mainPage.checkNotificationWindowPresence().checkTabsPresence();
         String startDateTime = mainPage.newFaultMaking()[0];
         mainPage.checkNewFaultCardPresence(startDateTime);
+        String stationName = "РП 220 кВ Черноморская";
+        StationPage stationPage = new MainPage().goToObjectPage(stationName);
+        String equipment = "КВЛ 220 кВ Черноморская - Поселковая";
+        String relayName = "РЗ1 Черноморская – Поселковая 1 на РП Черноморская";
+        stationPage.goToEquipment(stationName, equipment);
+        RelayPage relayPage = stationPage.gotoRelay(relayName);
+        relayPage.gotoSwitchTab().revertToInitialState().setSwitchers();
     }
 }

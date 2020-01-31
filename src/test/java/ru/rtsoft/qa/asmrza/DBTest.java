@@ -3,6 +3,8 @@ package ru.rtsoft.qa.asmrza;
 import org.junit.Test;
 
 import java.sql.*;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 
 public class DBTest {
@@ -77,5 +79,11 @@ public class DBTest {
         rs.close();
         st.close();
         connection.close();
+
+//        LocalDateTime now = LocalDateTime.now();
+//        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
+        String formatDateTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd.MM.yyyy, HH:mm:ss"));
+
+
     }
 }

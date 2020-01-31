@@ -4,7 +4,6 @@ import com.codeborne.selenide.ElementsCollection;
 import com.codeborne.selenide.SelenideElement;
 
 import java.sql.SQLException;
-import java.text.ParseException;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
@@ -330,7 +329,7 @@ public class MainPage extends Page {
         return stationPage;
     }
 
-    public void lastDateTimeComparing(String lastDateTimeBeforeAdding, String stationName) throws ParseException {
+    public void lastDateTimeComparing(String lastDateTimeBeforeAdding, String stationName) {
         LocalDate lastDateBefore = LocalDate.parse(lastDateTimeBeforeAdding, DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss.SSS"));
         LocalTime lastTimeBefore = LocalTime.parse(lastDateTimeBeforeAdding, DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss.SSS"));
         anyContainer.shouldBe(visible);
@@ -366,6 +365,7 @@ public class MainPage extends Page {
         newFault.addNewFault();
         String[] dateTimeCreation = newFault.enterValues(status, stationName, switchgear, equipment, endTimeShift, phase, distance);
         Page.goHome();
+        anyContainer.shouldBe(visible);
         return dateTimeCreation;
     }
 
